@@ -1,0 +1,11 @@
+name: cppbase
+version: 0.0.0
+homepage: https://github.com/morloclib/base-cpp
+synopsis: Core types and functions for C++
+description: This is totally experimental
+category: language-base
+license: MIT
+author: "Zebulun Arendsee"
+maintainer: "zbwrnz@gmail.com"
+github: https://github.com/morloclib/base-cpp
+bug-reports: https://github.com/morloclib/base-cpp
