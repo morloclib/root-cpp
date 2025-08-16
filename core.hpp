@@ -582,3 +582,5 @@ std::vector<std::string> morloc_lines(const std::string& x){
 int morloc_lengthS(std::string x){
     return x.length();
 }
+
+#endif
