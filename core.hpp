@@ -1,5 +1,5 @@
-#ifndef __MORLOC_CPPBASE_CORE_HPP__
-#define __MORLOC_CPPBASE_CORE_HPP__
+#ifndef __MORLOC__CORE_HPP__
+#define __MORLOC__CORE_HPP__
 
 #include <vector>
 #include <algorithm>
@@ -582,6 +582,3 @@ std::vector<std::string> morloc_lines(const std::string& x){
 int morloc_lengthS(std::string x){
     return x.length();
 }
-
-
-#endif

@@ -1,4 +1,4 @@
-module cppbase (*)
+module base-cpp (*)
 
 import conventions
 

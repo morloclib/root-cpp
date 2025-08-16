@@ -1,5 +1,5 @@
-#ifndef __MORLOC_CPPBASE_DATA_HPP__
-#define __MORLOC_CPPBASE_DATA_HPP__
+#ifndef __MORLOC_BASE_CPP_DATA_HPP__
+#define __MORLOC_BASE_CPP_DATA_HPP__
 
 #include <vector>
 #include <map>

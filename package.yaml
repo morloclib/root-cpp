@@ -1,4 +1,4 @@
-name: cppbase
+name: base-cpp
 version: 0.0.0
 homepage: https://github.com/morloclib/base-cpp
 synopsis: Core types and functions for C++
