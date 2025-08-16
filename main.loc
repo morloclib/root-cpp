@@ -1,6 +1,6 @@
 module base-cpp (*)
 
-import conventions
+import base
 
 source Cpp from "core.hpp"
  ( "morloc_run" as run
