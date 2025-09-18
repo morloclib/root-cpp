@@ -9,6 +9,10 @@
 #include <map>
 #include <set>
 
+// TODO: add
+  // "morloc_exp" as exp
+  // "morloc_log" as log
+  // "morloc_slice" as slice
 
 template <class A>
 A morloc_run(std::function<A()> f){
@@ -37,6 +41,20 @@ A morloc_const(A x, B y){
 template <class A, class B>
 A morloc_fst(std::tuple<A,B> x){
     return(std::get<0>(x));
+}
+
+template <class A, class B>
+std::tuple<A,B> morloc_toFst(std::function<A(const B&)> f, const B& y){
+    A x = f(y);
+    std::tuple<A,B> pair = { x, y }; 
+    return(pair);
+}
+
+template <class A, class B>
+std::tuple<A,B> morloc_toFst(std::function<B(const A&)> f, const A& x){
+    B y = f(x);
+    std::tuple<A,B> pair = { x, y }; 
+    return(pair);
 }
 
 // snd      :: forall a b . (a, b) -> b;
@@ -299,6 +317,11 @@ A morloc_mul(A x, A y){
 template <class A>
 A morloc_div(A x, A y){
     return x / y;
+}
+
+template <class A>
+A morloc_inv(A x){
+    return 1 / x;
 }
 
 template <class A>
@@ -576,11 +599,6 @@ std::vector<std::string> morloc_lines(const std::string& x){
         lines.push_back(line);
     }
     return lines;
-}
-
-// lengthS :: Str -> Int
-int morloc_lengthS(std::string x){
-    return x.length();
 }
 
 #endif

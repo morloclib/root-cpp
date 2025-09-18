@@ -1,150 +1,82 @@
-module base-cpp (*)
+module root-cpp (*)
 
-import base
+import root
 
 source Cpp from "core.hpp"
- ( "morloc_run" as run
- , "morloc_id" as id
- -- higher order functions
- , "morloc_at" as at
- , "morloc_map" as map
- , "morloc_append" as append
- , "morloc_zipWith" as zipWith
- , "morloc_fold" as fold
- , "morloc_enumerateWith" as enumerateWith
- -- combinators
- , "morloc_seq" as seq
- , "morloc_const" as const
- -- tuples
- , "morloc_fst" as fst
- , "morloc_snd" as snd
- , "morloc_fst3" as fst3
- , "morloc_snd3" as snd3
- , "morloc_thr3" as thr3
- -- pair-list functions
- , "morloc_zip" as zip
- , "morloc_unzip" as unzip
- , "morloc_keys" as keys
- , "morloc_vals" as vals
- , "morloc_from_list" as fromList
- , "morloc_filter_key" as filterKey
- , "morloc_filter_val" as filterVal
- , "morloc_map_key" as mapKey
- , "morloc_map_val" as mapVal
- , "morloc_with_fsts" as withFsts
- , "morloc_with_snds" as withSnds
- , "morloc_join" as join
- -- new functions for the paper case study
- , "morloc_unique" as unique
- , "morloc_ifelse" as ifelse
- , "morloc_branch" as branch
- , "morloc_head" as head
- , "morloc_tail" as tail -- [a]_{n} -> [a]_{n-1}
- , "morloc_init" as init -- [a]_{n>i} -> [a]_{n-i}
- , "morloc_last" as last -- [a] -> a
- , "morloc_take" as take -- i:Int -> [a]_{n>i} -> [a]_{n=i}
- , "morloc_drop" as drop -- i:Int -> [a]_{n>i} -> [a]_{n-i}
- , "morloc_filter" as filter
- -- comparators
- , "morloc_not" as not
- , "morloc_and" as and
- , "morloc_or" as or
- -- string
- , "morloc_show" as show
- , "morloc_unlines" as unlines
- , "morloc_words" as words
- , "morloc_unwords" as unwords
- , "morloc_paste" as paste
- , "morloc_lines" as lines
- )
-
-
-instance Show Int where
-  source Cpp from "core.hpp" ("morloc_show" as show)
-
-instance Show Real where
-  source Cpp from "core.hpp" ("morloc_show" as show)
-
-instance Show Str where
-  show x = x
-
-
-instance Sized [a] where
-  source Cpp from "core.hpp" ("morloc_length" as size)
-
-instance Sized Str where
-  source Cpp from "core.hpp" ("morloc_length" as size)
-
-
-instance Ord Real where
-  source Cpp from "core.hpp"
-    ( "morloc_le" as le
-    , "morloc_lt" as lt
-    , "morloc_ge" as ge
-    , "morloc_gt" as gt
+    ( "morloc_fst" as fst
+    , "morloc_snd" as snd
+    , "morloc_toFst" as toFst
+    , "morloc_toSnd" as toSnd
+    , "morloc_fst3" as fst3
+    , "morloc_snd3" as snd3
+    , "morloc_thr3" as thr3
+    , "morloc_ifelse" as ifelse
+    , "morloc_not" as not
+    , "morloc_and" as and
+    , "morloc_or" as or
     )
 
-instance Ord Int where
+-- This approach of defining generic instances reduces repetition when every
+-- instance will source the same function (the generic "==" function from Cppthon,
+-- here). However, it also implies that ALL types are members, even though some
+-- things cannot be meaningfully equated. I need a better system.
+instance Eq a where
+  -- this will work for any type that defines a '==' operator
+  source Cpp from "core.hpp" ("morloc_eq" as eq)
+
+instance Ord a where
+  -- this will work for any type that defines a '<=' operator
+  source Cpp from "core.hpp" ("morloc_le" as le)
+
+instance Integral Int where
   source Cpp from "core.hpp"
-    ( "morloc_le" as le
-    , "morloc_lt" as lt
-    , "morloc_ge" as ge
-    , "morloc_gt" as gt
+    ( "morloc_neg" as neg
+    , "morloc_add" as add
+    , "morloc_sub" as sub
     )
-
-
-instance Eq Real where
-  source Cpp from "core.hpp"
-    ( "morloc_eq" as eq
-    , "morloc_ne" as ne
-    )
-
-instance Eq Int where
-  source Cpp from "core.hpp"
-    ( "morloc_eq" as eq
-    , "morloc_ne" as ne
-    )
-
-instance Eq Str where
-  source Cpp from "core.hpp"
-    ( "morloc_eq" as eq
-    , "morloc_ne" as ne
-    )
-
-
-instance Addable Int where
-  source Cpp from "core.hpp"
-   ( "morloc_add" as add
-   , "morloc_mul" as mul
-   , "morloc_mod" as mod
-   , "morloc_div" as div
-   )
   zero = 0
-  one = 1
 
-instance Subtractable Int where
+instance Integral Real where
   source Cpp from "core.hpp"
-   ( "morloc_neg" as neg
-   , "morloc_sub" as sub
-   )
-
-
-instance Addable Real where
-  source Cpp from "core.hpp"
-   ( "morloc_add" as add
-   , "morloc_mul" as mul
-   , "morloc_mod" as mod
-   , "morloc_div" as div
-   )
+    ( "morloc_neg" as neg
+    , "morloc_add" as add
+    , "morloc_sub" as sub
+    )
   zero = 0.0
+
+instance Numeric Real where
+  source Cpp from "core.hpp"
+    ( "morloc_inv" as inv
+    , "morloc_mul" as mul
+    , "morloc_div" as div
+    , "morloc_exp" as exp
+    , "morloc_log" as log
+    )
   one = 1.0
 
 
-instance Subtractable Real where
+instance Monoid Str where
+  mempty = ""
+  source Cpp from "core.hpp" ("morloc_add" as mappend)
+
+instance Monoid (List a) where
+  mempty = []
+  source Cpp from "core.hpp" ("morloc_add" as mappend)
+
+
+instance Foldable List where
+  -- this will apply to any object in Cppthon that is iterable
+  source Cpp from "core.hpp" ("morloc_fold" as fold)
+
+instance Functor List where
+  source Cpp from "core.hpp" ("morloc_map" as map)
+
+instance Sequence List where
+  empty = []
   source Cpp from "core.hpp"
-   ( "morloc_neg" as neg
-   , "morloc_sub" as sub
-   )
+    ( "morloc_at" as at
+    , "morloc_slice" as slice
+    )
 
 
 -------------------------------------------------------------------------------
