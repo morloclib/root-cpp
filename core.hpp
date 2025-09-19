@@ -329,7 +329,7 @@ std::string morloc_show(A x){
 }
 
 
-template <class F, class A>
+template <class A, class F>
 auto morloc_map(F&& f, const std::vector<A>& xs) {
     using B = std::invoke_result_t<F, A>;
     std::vector<B> ys;
@@ -341,14 +341,13 @@ auto morloc_map(F&& f, const std::vector<A>& xs) {
 }
 
 
-template <class A, class B, class F>
-auto morloc_zipWith(
+template <class A, class B, class C, class F>
+std::vector<C> morloc_zipWith(
         F&& f,
         const std::vector<A>& xs,
         const std::vector<B>& ys
     )
 {
-    using C = std::invoke_result_t<F, A, B>;
     std::size_t N = std::min(xs.size(), ys.size());
     std::vector<C> zs(N);
     for(std::size_t i = 0; i < N; i++){
@@ -358,7 +357,7 @@ auto morloc_zipWith(
 }
 
 
-template <class F, class B, class A>
+template <class B, class A, class F>
 B morloc_fold(F&& f, B y, const std::vector<A>& xs) {
     for(const auto& x : xs) {
         y = f(y, x);
@@ -367,7 +366,7 @@ B morloc_fold(F&& f, B y, const std::vector<A>& xs) {
 }
 
 
-template <class F, class A, class Index>
+template <class A, class Index, class F>
 auto morloc_enumerateWith(F&& f, const std::vector<A>& xs){
     using B = std::invoke_result_t<F, A, Index>;
     std::vector<B> ys(xs.size());
