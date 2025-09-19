@@ -17,6 +17,7 @@ source Cpp from "core.hpp"
     , "morloc_not" as not
     , "morloc_and" as and
     , "morloc_or" as or
+    , "morloc_zipWith" as zipWith
     )
 
 -- This approach of defining generic instances reduces repetition when every
