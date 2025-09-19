@@ -14,9 +14,9 @@
   // "morloc_log" as log
   // "morloc_slice" as slice
 
-template <class A>
-A morloc_run(std::function<A()> f){
-    A x = f();
+template <class F>
+auto morloc_run(F&& f){
+    auto x = f();
     return(x);
 }
 
@@ -42,20 +42,6 @@ A morloc_const(A x, B y){
 template <class A, class B>
 A morloc_fst(std::tuple<A,B> x){
     return(std::get<0>(x));
-}
-
-template <class A, class B>
-std::tuple<A,B> morloc_toFst(std::function<A(const B&)> f, const B& y){
-    A x = f(y);
-    std::tuple<A,B> pair = { x, y }; 
-    return(pair);
-}
-
-template <class A, class B>
-std::tuple<A,B> morloc_toFst(std::function<B(const A&)> f, const A& x){
-    B y = f(x);
-    std::tuple<A,B> pair = { x, y }; 
-    return(pair);
 }
 
 // snd      :: forall a b . (a, b) -> b;
@@ -343,20 +329,26 @@ std::string morloc_show(A x){
 }
 
 
-template <class A, class B>
-std::vector<B> morloc_map(std::function<B(A)> f, const std::vector<A>& xs){
-    std::vector<B> ys(xs.size());
-    std::transform(xs.begin(), xs.end(), ys.begin(), f);
+template <class F, class A>
+auto morloc_map(F&& f, const std::vector<A>& xs) {
+    using B = std::invoke_result_t<F, A>;
+    std::vector<B> ys;
+    ys.reserve(xs.size());
+    for(const auto& x : xs) {
+        ys.push_back(f(x));
+    }
     return ys;
 }
 
-template <class A, class B, class C>
-std::vector<C> morloc_zipWith(
-        std::function<C(A,B)> f,
+
+template <class A, class B, class F>
+auto morloc_zipWith(
+        F&& f,
         const std::vector<A>& xs,
         const std::vector<B>& ys
     )
 {
+    using C = std::invoke_result_t<F, A, B>;
     std::size_t N = std::min(xs.size(), ys.size());
     std::vector<C> zs(N);
     for(std::size_t i = 0; i < N; i++){
@@ -365,16 +357,19 @@ std::vector<C> morloc_zipWith(
     return zs;
 }
 
-template <class A, class B>
-B morloc_fold(std::function<B(B,A)> f, B y, const std::vector<A>& xs){
-    for(std::size_t i=0; i < xs.size(); i++){
-        y = f(y, xs[i]);
+
+template <class F, class B, class A>
+B morloc_fold(F&& f, B y, const std::vector<A>& xs) {
+    for(const auto& x : xs) {
+        y = f(y, x);
     }
     return y;
 }
 
-template <class A, class B, class Index>
-std::vector<B> morloc_enumerateWith(std::function<B(A,Index)> f, const std::vector<A>& xs){
+
+template <class F, class A, class Index>
+auto morloc_enumerateWith(F&& f, const std::vector<A>& xs){
+    using B = std::invoke_result_t<F, A, Index>;
     std::vector<B> ys(xs.size());
     for(Index i = 0; i < xs.size(); i++){
        ys[i] = f(xs[i], i);  
@@ -404,18 +399,16 @@ A morloc_ifelse(bool cond, A x, A y){
     }
 }
 
-// template <typename Key, typename Value, typename NewKey>
-// std::map<NewKey, Value> morloc_map_key(std::function<NewKey(const Key&)> transform, const std::map<Key, Value>& map) {
-
 // branch Cpp :: (a -> Bool) -> (a -> b) -> (a -> b) -> a -> b
-template <class A, class B>
-B morloc_branch(std::function<bool(A)> cond, std::function<B(A)> f1, std::function<B(A)> f2, A x){
+template <class A, class Cond, class F1, class F2>
+auto morloc_branch(Cond&& cond, F1&& f1, F2&& f2, const A& x) {
     if (cond(x)) {
         return f1(x);
     } else {
         return f2(x);
     }
 }
+
 
 // head :: [a] -> a
 template <class A>
@@ -546,60 +539,60 @@ bool morloc_or(bool x, bool y){
     return x || y;
 }
 
-// unlines :: [Str] -> Str
-std::string morloc_unlines(const std::vector<std::string> & xs){
-    std::string result;
-    for(const auto& str : xs) {
-        result += str + '\n';
-    }
-    return result;
-}
-
-// words :: Str -> [Str]
-std::vector<std::string> morloc_words(const std::string& x){
-    std::vector<std::string> words;
-    std::istringstream iss(x);
-    std::string word;
-    while (iss >> word) {
-        words.push_back(word);
-    }
-    return words;
-}
-
-// unwords :: [Str] -> Str
-std::string morloc_unwords(const std::vector<std::string>& xs){
-    std::string result;
-    if (!xs.empty()) {
-        result += xs[0];
-        for (size_t i = 1; i < xs.size(); ++i) {
-            result += ' ' + xs[i];
-        }
-    }
-    return result;
-}
-
-// paste :: Str -> [Str] -> Str
-std::string morloc_paste(std::string delimiter, const std::vector<std::string>& xs){
-    if (xs.size() == 0){
-      return "";
-    } else {
-      std::string result = xs[0];
-      for (size_t i = 1; i < (xs.size()); i++){
-          result = result + delimiter + xs[i]; 
-      }
-      return result;
-    }
-}
-
-// lines :: Str -> [Str]
-std::vector<std::string> morloc_lines(const std::string& x){
-    std::vector<std::string> lines;
-    std::istringstream iss(x);
-    std::string line;
-    while (std::getline(iss, line)) {
-        lines.push_back(line);
-    }
-    return lines;
-}
+// // unlines :: [Str] -> Str
+// std::string morloc_unlines(const std::vector<std::string> & xs){
+//     std::string result;
+//     for(const auto& str : xs) {
+//         result += str + '\n';
+//     }
+//     return result;
+// }
+//
+// // words :: Str -> [Str]
+// std::vector<std::string> morloc_words(const std::string& x){
+//     std::vector<std::string> words;
+//     std::istringstream iss(x);
+//     std::string word;
+//     while (iss >> word) {
+//         words.push_back(word);
+//     }
+//     return words;
+// }
+//
+// // unwords :: [Str] -> Str
+// std::string morloc_unwords(const std::vector<std::string>& xs){
+//     std::string result;
+//     if (!xs.empty()) {
+//         result += xs[0];
+//         for (size_t i = 1; i < xs.size(); ++i) {
+//             result += ' ' + xs[i];
+//         }
+//     }
+//     return result;
+// }
+//
+// // paste :: Str -> [Str] -> Str
+// std::string morloc_paste(std::string delimiter, const std::vector<std::string>& xs){
+//     if (xs.size() == 0){
+//       return "";
+//     } else {
+//       std::string result = xs[0];
+//       for (size_t i = 1; i < (xs.size()); i++){
+//           result = result + delimiter + xs[i];
+//       }
+//       return result;
+//     }
+// }
+//
+// // lines :: Str -> [Str]
+// std::vector<std::string> morloc_lines(const std::string& x){
+//     std::vector<std::string> lines;
+//     std::istringstream iss(x);
+//     std::string line;
+//     while (std::getline(iss, line)) {
+//         lines.push_back(line);
+//     }
+//     return lines;
+// }
 
 #endif
