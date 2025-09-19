@@ -2,10 +2,12 @@ module root-cpp (*)
 
 import root
 
+-- used to force C++ usage, mostly in testing
 idcpp a :: a -> a 
 
 source Cpp from "core.hpp"
-    ( "morloc_idcpp" as idcpp
+    ( "morloc_id" as idcpp
+    , "morloc_id" as id
     , "morloc_fst" as fst
     , "morloc_snd" as snd
     , "morloc_toFst" as toFst

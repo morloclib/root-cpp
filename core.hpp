@@ -14,12 +14,6 @@
   // "morloc_log" as log
   // "morloc_slice" as slice
 
-// This is just a test function for forcing C++ usage
-template <class A>
-A morloc_idcpp(const A& x){
-  return x;
-}
-
 template <class A>
 A morloc_run(std::function<A()> f){
     A x = f();
@@ -27,9 +21,10 @@ A morloc_run(std::function<A()> f){
 }
 
 template <class A>
-A morloc_id(A x){
-    return(x);
+A morloc_id(const A& x){
+  return x;
 }
+
 
 template <class A, class B>
 A morloc_seq(A x, B y){
