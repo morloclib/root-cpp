@@ -2,8 +2,11 @@ module root-cpp (*)
 
 import root
 
+idcpp a :: a -> a 
+
 source Cpp from "core.hpp"
-    ( "morloc_fst" as fst
+    ( "morloc_idcpp" as idcpp
+    , "morloc_fst" as fst
     , "morloc_snd" as snd
     , "morloc_toFst" as toFst
     , "morloc_toSnd" as toSnd
