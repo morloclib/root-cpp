@@ -93,8 +93,8 @@ std::tuple<std::vector<A>,std::vector<B>> morloc_unzip(const std::vector<std::tu
     std::vector<A> a;
     std::vector<B> b;
     for(std::size_t i = 0; i < xs.size(); i++){
-       a.push_back(std::get<0>(xs[i])); 
-       b.push_back(std::get<1>(xs[i])); 
+       a.push_back(std::get<0>(xs[i]));
+       b.push_back(std::get<1>(xs[i]));
     }
     return std::make_tuple(a,b);
 }
@@ -225,7 +225,7 @@ std::vector<std::tuple<A,C>> morloc_with_snds(
 
 template <class A>
 std::vector<A> morloc_join(const std::vector<A>& xs, const std::vector<A>& ys){
-    std::vector<A> zs; 
+    std::vector<A> zs;
     for(std::size_t i = 0; i < xs.size(); i++){
         zs.push_back(xs[i]);
     }
@@ -329,9 +329,10 @@ std::string morloc_show(A x){
 }
 
 
-template <class A, class F>
-auto morloc_map(F&& f, const std::vector<A>& xs) {
-    using B = std::invoke_result_t<F, A>;
+template <class A, class B, class F>
+std::vector<B> morloc_map(F f, const std::vector<A>& xs) {
+    static_assert(std::is_invocable_r_v<B, F, A>,
+                  "Function f must be callable with type A and return type B");
     std::vector<B> ys;
     ys.reserve(xs.size());
     for(const auto& x : xs) {
@@ -343,11 +344,13 @@ auto morloc_map(F&& f, const std::vector<A>& xs) {
 
 template <class A, class B, class C, class F>
 std::vector<C> morloc_zipWith(
-        F&& f,
+        F f,
         const std::vector<A>& xs,
         const std::vector<B>& ys
     )
 {
+    static_assert(std::is_invocable_r_v<C, F, A, B>,
+                  "Function f must be callable with type A and return type B");
     std::size_t N = std::min(xs.size(), ys.size());
     std::vector<C> zs(N);
     for(std::size_t i = 0; i < N; i++){
@@ -371,7 +374,7 @@ auto morloc_enumerateWith(F&& f, const std::vector<A>& xs){
     using B = std::invoke_result_t<F, A, Index>;
     std::vector<B> ys(xs.size());
     for(Index i = 0; i < xs.size(); i++){
-       ys[i] = f(xs[i], i);  
+       ys[i] = f(xs[i], i);
     }
     return ys;
 }
@@ -497,32 +500,32 @@ int morloc_length(A x){
 
 template <class A>
 bool morloc_gt(A x, A y){
-   return x > y; 
+   return x > y;
 }
 
 template <class A>
 bool morloc_lt(A x, A y){
-   return x < y; 
+   return x < y;
 }
 
 template <class A>
 bool morloc_ge(A x, A y){
-   return x >= y; 
+   return x >= y;
 }
 
 template <class A>
 bool morloc_le(A x, A y){
-   return x <= y; 
+   return x <= y;
 }
 
 template <class A>
 bool morloc_eq(A x, A y){
-   return x == y; 
+   return x == y;
 }
 
 template <class A>
 bool morloc_ne(A x, A y){
-   return x != y; 
+   return x != y;
 }
 
 
