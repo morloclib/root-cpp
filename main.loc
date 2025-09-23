@@ -2,6 +2,22 @@ module root-cpp (*)
 
 import root
 
+type Cpp => Filename = "std::string"
+type Cpp => Unit = "mlc::Unit" -- this is an enum with a single element, NOT `void`, which corresponds to bottom
+type Cpp => Real = "double"
+type Cpp => Int = "int"
+type Cpp => Str = "std::string"
+type Cpp => Bool = "bool"
+type Cpp => (Map a b) = "std::map<$1,$2>" a b
+type Cpp => (List a) = "std::vector<$1>" a
+type Cpp => (Tuple2 a b) = "std::tuple<$1,$2>" a b
+type Cpp => (Tuple3 a b c) = "std::tuple<$1,$2,$3>" a b c
+type Cpp => (Tuple4 a b c d) = "std::tuple<$1,$2,$3,$4>" a b c d
+type Cpp => (Tuple5 a b c d e) = "std::tuple<$1,$2,$3,$4,$5>" a b c d e
+type Cpp => (Tuple6 a b c d e f) = "std::tuple<$1,$2,$3,$4,$5,$6>" a b c d e f
+type Cpp => (Tuple7 a b c d e f g) = "std::tuple<$1,$2,$3,$4,$5,$6,$7>" a b c d e f g
+type Cpp => (Tuple8 a b c d e f g h) = "std::tuple<$1,$2,$3,$4,$5,$6,$7,$8>" a b c d e f g h
+
 -- used to force C++ usage, mostly in testing
 idcpp a :: a -> a 
 
