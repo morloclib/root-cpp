@@ -107,8 +107,6 @@ instance Sequence List where
 -- be exported.
 -------------------------------------------------------------------------------
 
-type Cpp => (Map key val) = "std::map<$1,$2>" key val
-
 instance Packable ([key],[val]) (Map key val) where
   source Cpp from "data.hpp"
    ( "morloc_packMap" as pack
