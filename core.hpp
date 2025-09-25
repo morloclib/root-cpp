@@ -9,11 +9,6 @@
 #include <map>
 #include <set>
 
-// TODO: add
-  // "morloc_exp" as exp
-  // "morloc_log" as log
-  // "morloc_slice" as slice
-
 template <class F>
 auto morloc_run(F&& f){
     auto x = f();
@@ -188,10 +183,33 @@ std::map<Key, Value> morloc_filter_val(std::function<bool(const Value&)> predica
     return result;
 }
 
-template <class A>
-A morloc_at(const std::vector<A>& xs, int i){
+template <class A, class INDEX>
+A morloc_at(const std::vector<A>& xs, INDEX i){
     return xs[i];
 }
+
+template <class A, class INDEX>
+std::vector<A> morloc_slice(INDEX i, INDEX j, std::vector<A> vec) {
+    // Handle negative indices and bounds checking
+    INDEX size = static_cast<INDEX>(vec.size());
+
+    // Convert negative indices to positive
+    if (i < 0) i += size;
+    if (j < 0) j += size;
+
+    // Clamp indices to valid range
+    i = std::max(static_cast<INDEX>(0), std::min(i, size));
+    j = std::max(static_cast<INDEX>(0), std::min(j, size));
+
+    // Ensure i <= j
+    if (i > j) {
+        return std::vector<A>();  // Return empty vector if invalid range
+    }
+
+    // Create slice using iterators
+    return std::vector<A>(vec.begin() + i, vec.begin() + j);
+}
+
 
 // with_fsts  :: forall a b c . ([a] -> [b]) -> [(a, c)] -> [(b, c)];
 template <class A, class B, class C>
@@ -339,6 +357,12 @@ std::vector<B> morloc_map(F f, const std::vector<A>& xs) {
         ys.push_back(f(x));
     }
     return ys;
+}
+
+// Overload that deduces return type automatically
+template <class A, class F>
+auto morloc_map(F f, const std::vector<A>& xs) -> std::vector<std::invoke_result_t<F, A>> {
+    return morloc_map<A, std::invoke_result_t<F, A>, F>(f, xs);
 }
 
 
