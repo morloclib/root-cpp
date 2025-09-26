@@ -8,6 +8,8 @@
 #include <assert.h>
 #include <map>
 #include <set>
+#include <stdexcept>
+#include <sstream>
 
 template <class F>
 auto morloc_run(F&& f){
