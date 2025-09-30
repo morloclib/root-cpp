@@ -186,7 +186,7 @@ std::map<Key, Value> morloc_filter_val(std::function<bool(const Value&)> predica
 }
 
 template <class A, class INDEX>
-A morloc_at(const std::vector<A>& xs, INDEX i){
+A morloc_at(INDEX i, const std::vector<A>& xs){
     return xs[i];
 }
 
