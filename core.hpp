@@ -33,35 +33,6 @@ A morloc_const(A x, B y){
     return(x);
 }
 
-// tuple functions
-
-// fst      :: forall a b . (a, b) -> a ;
-template <class A, class B>
-A morloc_fst(std::tuple<A,B> x){
-    return(std::get<0>(x));
-}
-
-// snd      :: forall a b . (a, b) -> b;
-template <class A, class B>
-B morloc_snd(std::tuple<A,B> x){
-    return(std::get<1>(x));
-}
-
-
-template <class A, class B, class C>
-A morloc_fst3(std::tuple<A,B,C> x){
-    return(std::get<0>(x));
-}
-template <class A, class B, class C>
-B morloc_snd3(std::tuple<A,B,C> x){
-    return(std::get<1>(x));
-}
-template <class A, class B, class C>
-C morloc_thr3(std::tuple<A,B,C> x){
-    return(std::get<2>(x));
-}
-
-
 // pair :: forall a b . a -> b -> (a, b);
 template <class A, class B>
 std::pair<A,B> morloc_pair(A x, B y){

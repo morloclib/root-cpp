@@ -22,11 +22,6 @@ idcpp a :: a -> a
 
 source Cpp from "core.hpp"
     ( "morloc_id" as idcpp
-    , "morloc_fst" as fst
-    , "morloc_snd" as snd
-    , "morloc_fst3" as fst3
-    , "morloc_snd3" as snd3
-    , "morloc_thr3" as thr3
     , "morloc_ifelse" as ifelse
     , "morloc_branch" as branch
     , "morloc_not" as not
