@@ -45,6 +45,25 @@ std::pair<B,A> morloc_pair(std::function<B(A)> f, A a){
     return(std::pair<B,A>(f(a),a));
 }
 
+
+// Reverse a vector without mutating the input
+template<typename T>
+std::vector<T> morloc_reverse(const std::vector<T>& xs) {
+    std::vector<T> result(xs);  // Create a copy
+    std::reverse(result.begin(), result.end());
+    return result;
+}
+
+
+// Sort a vector without mutating the input
+template<typename T>
+std::vector<T> morloc_sort(const std::vector<T>& xs) {
+    std::vector<T> result(xs);  // Create a copy
+    std::sort(result.begin(), result.end());
+    return result;
+}
+
+
 // zip :: forall a b . [a] -> [b] -> [(a, b)];
 template <class A, class B>
 std::vector<std::tuple<A,B>> morloc_zip(const std::vector<A> &a, const std::vector<B> &b){

@@ -28,6 +28,8 @@ source Cpp from "core.hpp"
     , "morloc_and" as and
     , "morloc_or" as or
     , "morloc_zipWith" as zipWith
+    , "morloc_reverse" as reverse
+    , "morloc_sort" as sort
     )
 
 -- This approach of defining generic instances reduces repetition when every
