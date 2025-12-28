@@ -96,6 +96,8 @@ instance Sequence List where
     , "morloc_slice" as slice
     )
 
+instance Show a where
+  source Cpp from "core.hpp" ("morloc_show" as show)
 
 -------------------------------------------------------------------------------
 --                 Pack and Unpack internal functions
