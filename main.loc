@@ -17,6 +17,17 @@ type Cpp => (Tuple6 a b c d e f) = "std::tuple<$1,$2,$3,$4,$5,$6>" a b c d e f
 type Cpp => (Tuple7 a b c d e f g) = "std::tuple<$1,$2,$3,$4,$5,$6,$7>" a b c d e f g
 type Cpp => (Tuple8 a b c d e f g h) = "std::tuple<$1,$2,$3,$4,$5,$6,$7,$8>" a b c d e f g h
 
+type Cpp => Float64 = "double"
+type Cpp => Float32 = "float"
+type Cpp => Int8    = "int8_t"
+type Cpp => Int16   = "int16_t"
+type Cpp => Int32   = "int32_t"
+type Cpp => Int64   = "int64_t"
+type Cpp => UInt8   = "uint8_t"
+type Cpp => UInt16  = "uint16_t"
+type Cpp => UInt32  = "uint32_t"
+type Cpp => UInt64  = "uint64_t"
+
 -- used to force C++ usage, mostly in testing
 idcpp a :: a -> a 
 
@@ -25,8 +36,8 @@ source Cpp from "core.hpp"
     , "morloc_ifelse" as ifelse
     , "morloc_branch" as branch
     , "morloc_not" as not
-    , "morloc_and" as and
-    , "morloc_or" as or
+    , "morloc_and" as (&&)
+    , "morloc_or" as (||)
     , "morloc_zipWith" as zipWith
     , "morloc_reverse" as reverse
     , "morloc_sort" as sort
@@ -39,47 +50,155 @@ source Cpp from "core.hpp"
 -- things cannot be meaningfully equated. I need a better system.
 instance Eq a where
   -- this will work for any type that defines a '==' operator
-  source Cpp from "core.hpp" ("morloc_eq" as eq)
+  source Cpp from "core.hpp" ("morloc_eq" as (==))
 
 instance Ord a where
   -- this will work for any type that defines a '<=' operator
-  source Cpp from "core.hpp" ("morloc_le" as le)
+  source Cpp from "core.hpp" ("morloc_le" as (<=))
 
 instance Integral Int where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
-    , "morloc_add" as add
-    , "morloc_sub" as sub
-    , "morloc_mul" as mul
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
     )
   zero = 0
+
+instance Integral Int8 where
+  source Cpp from "core.hpp"
+    ( "morloc_neg" as neg
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
+    )
+  zero = 0
+
+instance Integral Int16 where
+  source Cpp from "core.hpp"
+    ( "morloc_neg" as neg
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
+    )
+  zero = 0
+
+instance Integral Int32 where
+  source Cpp from "core.hpp"
+    ( "morloc_neg" as neg
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
+    )
+  zero = 0
+
+instance Integral Int64 where
+  source Cpp from "core.hpp"
+    ( "morloc_neg" as neg
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
+    )
+  zero = 0
+
+instance Integral UInt8 where
+  source Cpp from "core.hpp"
+    ( "morloc_neg" as neg
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
+    )
+  zero = 0
+
+instance Integral UInt16 where
+  source Cpp from "core.hpp"
+    ( "morloc_neg" as neg
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
+    )
+  zero = 0
+
+instance Integral UInt32 where
+  source Cpp from "core.hpp"
+    ( "morloc_neg" as neg
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
+    )
+  zero = 0
+
+instance Integral UInt64 where
+  source Cpp from "core.hpp"
+    ( "morloc_neg" as neg
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
+    )
+  zero = 0
+
 
 instance Integral Real where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
-    , "morloc_add" as add
-    , "morloc_sub" as sub
-    , "morloc_mul" as mul
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
+    )
+  zero = 0.0
+
+instance Integral Float32 where
+  source Cpp from "core.hpp"
+    ( "morloc_neg" as neg
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
+    )
+  zero = 0.0
+
+instance Integral Float64 where
+  source Cpp from "core.hpp"
+    ( "morloc_neg" as neg
+    , "morloc_add" as (+)
+    , "morloc_sub" as (-)
+    , "morloc_mul" as (*)
     )
   zero = 0.0
 
 instance Numeric Real where
   source Cpp from "core.hpp"
     ( "morloc_inv" as inv
-    , "morloc_div" as div
-    , "morloc_exp" as exp
+    , "morloc_div" as (/)
+    , "morloc_exp" as (**)
     , "morloc_log" as log
     )
   one = 1.0
 
+instance Numeric Float32 where
+  source Cpp from "core.hpp"
+    ( "morloc_inv" as inv
+    , "morloc_div" as (/)
+    , "morloc_exp" as (**)
+    , "morloc_log" as log
+    )
+  one = 1.0
+
+instance Numeric Float64 where
+  source Cpp from "core.hpp"
+    ( "morloc_inv" as inv
+    , "morloc_div" as (/)
+    , "morloc_exp" as (**)
+    , "morloc_log" as log
+    )
+  one = 1.0
 
 instance Monoid Str where
   mempty = ""
-  source Cpp from "core.hpp" ("morloc_add" as mappend)
+  source Cpp from "core.hpp" ("morloc_add" as (<>))
 
 instance Monoid (List a) where
   mempty = []
-  source Cpp from "core.hpp" ("morloc_add" as mappend)
+  source Cpp from "core.hpp" ("morloc_add" as (<>))
 
 
 instance Foldable List where
