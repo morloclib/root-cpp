@@ -29,7 +29,7 @@ type Cpp => UInt32  = "uint32_t"
 type Cpp => UInt64  = "uint64_t"
 
 -- used to force C++ usage, mostly in testing
-idcpp a :: a -> a 
+idcpp a :: a -> a
 
 source Cpp from "core.hpp"
     ( "morloc_id" as idcpp
@@ -41,99 +41,139 @@ source Cpp from "core.hpp"
     , "morloc_zipWith" as zipWith
     , "morloc_reverse" as reverse
     , "morloc_sort" as sort
+    , "morloc_sortBy" as sortBy
     , "morloc_filter" as filter
+    , "morloc_unzip" as unzip
+    , "morloc_replicate" as replicate
+    , "morloc_takeWhile" as takeWhile
+    , "morloc_dropWhile" as dropWhile
+    , "morloc_partition" as partition
+    , "morloc_scanl" as scanl
+    , "morloc_enumerate" as enumerate
+    , "morloc_intersperse" as intersperse
+    , "morloc_keys" as keys
+    , "morloc_vals" as values
+    , "morloc_lookup" as lookup
+    , "morloc_insert" as insert
+    , "morloc_delete" as delete
+    , "morloc_from_list" as fromList
+    , "morloc_to_list" as toList
+    , "morloc_map_val" as mapValues
+    , "morloc_map_key" as mapKeys
+    , "morloc_filter_map" as filterMap
     )
 
--- This approach of defining generic instances reduces repetition when every
--- instance will source the same function (the generic "==" function from Cppthon,
--- here). However, it also implies that ALL types are members, even though some
--- things cannot be meaningfully equated. I need a better system.
 instance Eq a where
-  -- this will work for any type that defines a '==' operator
   source Cpp from "core.hpp" ("morloc_eq" as (==))
 
 instance Ord a where
-  -- this will work for any type that defines a '<=' operator
   source Cpp from "core.hpp" ("morloc_le" as (<=))
 
 instance Integral Int where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0
 
 instance Integral Int8 where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0
 
 instance Integral Int16 where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0
 
 instance Integral Int32 where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0
 
 instance Integral Int64 where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0
 
 instance Integral UInt8 where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0
 
 instance Integral UInt16 where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0
 
 instance Integral UInt32 where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0
 
 instance Integral UInt64 where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0
 
@@ -141,27 +181,36 @@ instance Integral UInt64 where
 instance Integral Real where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0.0
 
 instance Integral Float32 where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0.0
 
 instance Integral Float64 where
   source Cpp from "core.hpp"
     ( "morloc_neg" as neg
+    , "morloc_abs" as abs
     , "morloc_add" as (+)
     , "morloc_sub" as (-)
     , "morloc_mul" as (*)
+    , "morloc_div" as (//)
+    , "morloc_mod" as (%)
     )
   zero = 0.0
 
@@ -169,28 +218,25 @@ instance Numeric Real where
   source Cpp from "core.hpp"
     ( "morloc_inv" as inv
     , "morloc_div" as (/)
-    , "morloc_exp" as (**)
-    , "morloc_log" as log
+    , "morloc_pow" as (**)
+    , "morloc_ln" as ln
     )
-  one = 1.0
 
 instance Numeric Float32 where
   source Cpp from "core.hpp"
     ( "morloc_inv" as inv
     , "morloc_div" as (/)
-    , "morloc_exp" as (**)
-    , "morloc_log" as log
+    , "morloc_pow" as (**)
+    , "morloc_ln" as ln
     )
-  one = 1.0
 
 instance Numeric Float64 where
   source Cpp from "core.hpp"
     ( "morloc_inv" as inv
     , "morloc_div" as (/)
-    , "morloc_exp" as (**)
-    , "morloc_log" as log
+    , "morloc_pow" as (**)
+    , "morloc_ln" as ln
     )
-  one = 1.0
 
 instance Monoid Str where
   mempty = ""
@@ -198,11 +244,10 @@ instance Monoid Str where
 
 instance Monoid (List a) where
   mempty = []
-  source Cpp from "core.hpp" ("morloc_add" as (<>))
+  source Cpp from "core.hpp" ("morloc_list_add" as (<>))
 
 
 instance Foldable List where
-  -- this will apply to any object in Cppthon that is iterable
   source Cpp from "core.hpp" ("morloc_fold" as fold)
 
 instance Functor List where
