@@ -2,13 +2,17 @@
 #define __MORLOC__CORE_HPP__
 
 #include <vector>
+#include <deque>
 #include <algorithm>
 #include <functional>
 #include <utility>
-#include <map>
 #include <stdexcept>
 #include <sstream>
+#include <map>
 #include <cmath>
+#include <optional>
+#include <set>
+#include <type_traits>
 
 template <class A>
 A morloc_id(const A& x){
@@ -47,56 +51,6 @@ std::tuple<std::vector<A>,std::vector<B>> morloc_unzip(const std::vector<std::tu
 }
 
 
-// keys :: Map a b -> [a]
-template <typename Key, typename Value>
-std::vector<Key> morloc_keys(const std::map<Key, Value>& map) {
-    std::vector<Key> result;
-    for (const auto& pair : map) {
-        result.push_back(pair.first);
-    }
-    return result;
-}
-
-// vals :: Map a b -> [b]
-template <typename Key, typename Value>
-std::vector<Value> morloc_vals(const std::map<Key, Value>& map) {
-    std::vector<Value> result;
-    for (const auto& pair : map) {
-        result.push_back(pair.second);
-    }
-    return result;
-}
-
-// fromList :: [(a, b)] -> Map a b
-template <typename Key, typename Value>
-std::map<Key, Value> morloc_from_list(const std::vector<std::tuple<Key, Value>>& tuples) {
-    std::map<Key, Value> result;
-    for (const auto& t : tuples) {
-        result[std::get<0>(t)] = std::get<1>(t);
-    }
-    return result;
-}
-
-// mapKey :: (a -> a') -> Map a b -> Map a' b
-template <typename Key, typename Value, typename NewKey>
-std::map<NewKey, Value> morloc_map_key(std::function<NewKey(const Key&)> transform, const std::map<Key, Value>& map) {
-    std::map<NewKey, Value> result;
-    for (const auto& pair : map) {
-        result[transform(pair.first)] = pair.second;
-    }
-    return result;
-}
-
-// mapVal :: (b -> b') -> Map a b -> Map a b'
-template <typename Key, typename Value, typename NewValue>
-std::map<Key, NewValue> morloc_map_val(std::function<NewValue(const Value&)> transform, const std::map<Key, Value>& map) {
-    std::map<Key, NewValue> result;
-    for (const auto& pair : map) {
-        result[pair.first] = transform(pair.second);
-    }
-    return result;
-}
-
 template <class A, class INDEX>
 A morloc_at(INDEX i, const std::vector<A>& xs){
     return xs[i];
@@ -125,11 +79,20 @@ A morloc_add(A x, A y){
     return x + y;
 }
 
+// List (vector) concat
 template <class A>
 std::vector<A> morloc_list_add(const std::vector<A>& xs, const std::vector<A>& ys){
     std::vector<A> zs;
     zs.reserve(xs.size() + ys.size());
     zs.insert(zs.end(), xs.begin(), xs.end());
+    zs.insert(zs.end(), ys.begin(), ys.end());
+    return zs;
+}
+
+// Deque concat
+template <class A>
+std::deque<A> morloc_list_add(const std::deque<A>& xs, const std::deque<A>& ys){
+    std::deque<A> zs(xs);
     zs.insert(zs.end(), ys.begin(), ys.end());
     return zs;
 }
@@ -187,6 +150,9 @@ std::string morloc_show(A x){
 }
 
 
+// --- map (Functor) ---
+
+// Vector overloads
 template <class A, class B, class F>
 std::vector<B> morloc_map(F f, const std::vector<A>& xs) {
     static_assert(std::is_invocable_r_v<B, F, A>,
@@ -199,9 +165,25 @@ std::vector<B> morloc_map(F f, const std::vector<A>& xs) {
     return ys;
 }
 
-// Overload that deduces return type automatically
 template <class A, class F>
 auto morloc_map(F f, const std::vector<A>& xs) -> std::vector<std::invoke_result_t<F, A>> {
+    return morloc_map<A, std::invoke_result_t<F, A>, F>(f, xs);
+}
+
+// Deque overloads
+template <class A, class B, class F>
+std::deque<B> morloc_map(F f, const std::deque<A>& xs) {
+    static_assert(std::is_invocable_r_v<B, F, A>,
+                  "Function f must be callable with type A and return type B");
+    std::deque<B> ys;
+    for(const auto& x : xs) {
+        ys.push_back(f(x));
+    }
+    return ys;
+}
+
+template <class A, class F>
+auto morloc_map(F f, const std::deque<A>& xs) -> std::deque<std::invoke_result_t<F, A>> {
     return morloc_map<A, std::invoke_result_t<F, A>, F>(f, xs);
 }
 
@@ -224,6 +206,9 @@ std::vector<C> morloc_zipWith(
 }
 
 
+// --- fold (Foldable) ---
+
+// Vector overloads
 template <class B, class A, class F>
 B morloc_fold(F&& f, B y, const std::vector<A>& xs) {
     for(const auto& x : xs) {
@@ -232,16 +217,57 @@ B morloc_fold(F&& f, B y, const std::vector<A>& xs) {
     return y;
 }
 
-
-// ifelse :: Bool -> a -> a -> a
-template <class A>
-A morloc_ifelse(bool cond, A x, A y){
-    if (cond) {
-        return x;
-    } else {
-        return y;
+template <class A, class F>
+A morloc_fold1(F&& f, const std::vector<A>& xs) {
+    A acc = xs[0];
+    for(std::size_t i = 1; i < xs.size(); i++) {
+        acc = f(acc, xs[i]);
     }
+    return acc;
 }
+
+template <class A, class F>
+std::optional<A> morloc_safeFold1(F&& f, const std::vector<A>& xs) {
+    if(xs.empty()) {
+        return std::nullopt;
+    }
+    A acc = xs[0];
+    for(std::size_t i = 1; i < xs.size(); i++) {
+        acc = f(acc, xs[i]);
+    }
+    return acc;
+}
+
+// Deque overloads
+template <class B, class A, class F>
+B morloc_fold(F&& f, B y, const std::deque<A>& xs) {
+    for(const auto& x : xs) {
+        y = f(y, x);
+    }
+    return y;
+}
+
+template <class A, class F>
+A morloc_fold1(F&& f, const std::deque<A>& xs) {
+    A acc = xs[0];
+    for(std::size_t i = 1; i < xs.size(); i++) {
+        acc = f(acc, xs[i]);
+    }
+    return acc;
+}
+
+template <class A, class F>
+std::optional<A> morloc_safeFold1(F&& f, const std::deque<A>& xs) {
+    if(xs.empty()) {
+        return std::nullopt;
+    }
+    A acc = xs[0];
+    for(std::size_t i = 1; i < xs.size(); i++) {
+        acc = f(acc, xs[i]);
+    }
+    return acc;
+}
+
 
 // branch :: (a -> Bool) -> (a -> b) -> (a -> b) -> a -> b
 template <class A, class B, class Cond, class F1, class F2>
@@ -351,52 +377,217 @@ std::vector<std::tuple<int, A>> morloc_enumerate(const std::vector<A>& xs) {
     return result;
 }
 
-// lookup :: a -> Map a b -> b
-template <class K, class V>
-V morloc_lookup(const K& key, const std::map<K, V>& m) {
-    auto it = m.find(key);
-    if (it == m.end()) {
-        throw std::runtime_error("Key not found in map");
+// --- Stack operations ---
+
+// cons :: a -> [a] -> [a]  (vector)
+template <class A>
+std::vector<A> morloc_cons(const A& x, const std::vector<A>& xs) {
+    std::vector<A> result;
+    result.reserve(xs.size() + 1);
+    result.push_back(x);
+    result.insert(result.end(), xs.begin(), xs.end());
+    return result;
+}
+
+// uncons :: [a] -> (a, [a])  (vector)
+template <class A>
+std::tuple<A, std::vector<A>> morloc_uncons(const std::vector<A>& xs) {
+    return std::make_tuple(xs[0], std::vector<A>(xs.begin() + 1, xs.end()));
+}
+
+// cons :: a -> Deque a -> Deque a
+template <class A>
+std::deque<A> morloc_cons(const A& x, const std::deque<A>& xs) {
+    std::deque<A> result(xs);
+    result.push_front(x);
+    return result;
+}
+
+// uncons :: Deque a -> (a, Deque a)
+template <class A>
+std::tuple<A, std::deque<A>> morloc_uncons(const std::deque<A>& xs) {
+    std::deque<A> tail(xs.begin() + 1, xs.end());
+    return std::make_tuple(xs.front(), tail);
+}
+
+// --- Queue operations ---
+
+// snoc :: [a] -> a -> [a]  (vector)
+template <class A>
+std::vector<A> morloc_snoc(const std::vector<A>& xs, const A& x) {
+    std::vector<A> result(xs);
+    result.push_back(x);
+    return result;
+}
+
+// unsnoc :: [a] -> ([a], a)  (vector)
+template <class A>
+std::tuple<std::vector<A>, A> morloc_unsnoc(const std::vector<A>& xs) {
+    return std::make_tuple(std::vector<A>(xs.begin(), xs.end() - 1), xs.back());
+}
+
+// snoc :: Deque a -> a -> Deque a
+template <class A>
+std::deque<A> morloc_snoc(const std::deque<A>& xs, const A& x) {
+    std::deque<A> result(xs);
+    result.push_back(x);
+    return result;
+}
+
+// unsnoc :: Deque a -> (Deque a, a)
+template <class A>
+std::tuple<std::deque<A>, A> morloc_unsnoc(const std::deque<A>& xs) {
+    std::deque<A> init(xs.begin(), xs.end() - 1);
+    return std::make_tuple(init, xs.back());
+}
+
+// --- Indexed for Deque ---
+
+template <class A, class INDEX>
+A morloc_at(INDEX i, const std::deque<A>& xs){
+    return xs[i];
+}
+
+template <class A, class INDEX>
+std::deque<A> morloc_slice(INDEX i, INDEX j, std::deque<A> dq) {
+    INDEX size = static_cast<INDEX>(dq.size());
+
+    if (i < 0) i += size;
+    if (j < 0) j += size;
+
+    i = std::max(static_cast<INDEX>(0), std::min(i, size));
+    j = std::max(static_cast<INDEX>(0), std::min(j, size));
+
+    if (i > j) {
+        return std::deque<A>();
     }
-    return it->second;
+
+    return std::deque<A>(dq.begin() + i, dq.begin() + j);
 }
 
-// insert :: a -> b -> Map a b -> Map a b
-template <class K, class V>
-std::map<K, V> morloc_insert(const K& key, const V& val, const std::map<K, V>& m) {
-    std::map<K, V> result(m);
-    result[key] = val;
+// --- Other list operations ---
+
+// iterate :: Int -> (a -> a) -> a -> [a]
+template <class A, class F>
+std::vector<A> morloc_iterate(int n, F&& f, A x) {
+    std::vector<A> result;
+    result.reserve(n);
+    for (int i = 0; i < n; i++) {
+        result.push_back(x);
+        x = f(x);
+    }
     return result;
 }
 
-// delete :: a -> Map a b -> Map a b
-template <class K, class V>
-std::map<K, V> morloc_delete(const K& key, const std::map<K, V>& m) {
-    std::map<K, V> result(m);
-    result.erase(key);
+// groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
+template <class A>
+std::vector<std::vector<A>> morloc_groupBy(std::function<bool(A, A)> eq, const std::vector<A>& xs) {
+    std::vector<std::vector<A>> result;
+    if (xs.empty()) return result;
+    std::vector<A> group;
+    group.push_back(xs[0]);
+    for (std::size_t i = 1; i < xs.size(); i++) {
+        if (eq(xs[i-1], xs[i])) {
+            group.push_back(xs[i]);
+        } else {
+            result.push_back(group);
+            group.clear();
+            group.push_back(xs[i]);
+        }
+    }
+    result.push_back(group);
     return result;
 }
 
-// toList :: Map a b -> [(a, b)]
-template <class K, class V>
-std::vector<std::tuple<K, V>> morloc_to_list(const std::map<K, V>& m) {
-    std::vector<std::tuple<K, V>> result;
-    for (const auto& pair : m) {
+// find :: (a -> Bool) -> [a] -> ?a
+template <class A>
+std::optional<A> morloc_find(std::function<bool(A)> f, const std::vector<A>& xs) {
+    for (const auto& x : xs) {
+        if (f(x)) return x;
+    }
+    return std::nullopt;
+}
+
+// unique :: [a] -> [a]
+template <class A>
+std::vector<A> morloc_unique(const std::vector<A>& xs) {
+    std::vector<A> result;
+    std::set<A> seen;
+    for (const auto& x : xs) {
+        if (seen.find(x) == seen.end()) {
+            seen.insert(x);
+            result.push_back(x);
+        }
+    }
+    return result;
+}
+
+// groupSort :: [(a, b)] -> [(a, [b])]
+template <class A, class B>
+std::vector<std::tuple<A, std::vector<B>>> morloc_groupSort(const std::vector<std::tuple<A, B>>& xs) {
+    std::map<A, std::vector<B>> groups;
+    for (const auto& t : xs) {
+        groups[std::get<0>(t)].push_back(std::get<1>(t));
+    }
+    std::vector<std::tuple<A, std::vector<B>>> result;
+    for (const auto& pair : groups) {
         result.push_back(std::make_tuple(pair.first, pair.second));
     }
     return result;
 }
 
-// filterMap :: (a -> b -> Bool) -> Map a b -> Map a b
-template <class K, class V>
-std::map<K, V> morloc_filter_map(std::function<bool(K, V)> f, const std::map<K, V>& m) {
-    std::map<K, V> result;
-    for (const auto& pair : m) {
-        if (f(pair.first, pair.second)) {
-            result[pair.first] = pair.second;
-        }
+// range :: Int -> Int -> [Int]
+std::vector<int> morloc_range(int a, int b) {
+    std::vector<int> result;
+    for (int i = a; i <= b; i++) {
+        result.push_back(i);
     }
     return result;
+}
+
+// rangeStep :: Int -> Int -> Int -> [Int]
+std::vector<int> morloc_rangeStep(int a, int b, int step) {
+    std::vector<int> result;
+    for (int i = a; i <= b; i += step) {
+        result.push_back(i);
+    }
+    return result;
+}
+
+// read :: Str -> ?Int
+std::optional<int> morloc_read_int(const std::string& s) {
+    try {
+        std::size_t pos;
+        int val = std::stoi(s, &pos);
+        if (pos == s.size()) return val;
+        return std::nullopt;
+    } catch (...) {
+        return std::nullopt;
+    }
+}
+
+// read :: Str -> ?Real
+std::optional<double> morloc_read_real(const std::string& s) {
+    try {
+        std::size_t pos;
+        double val = std::stod(s, &pos);
+        if (pos == s.size()) return val;
+        return std::nullopt;
+    } catch (...) {
+        return std::nullopt;
+    }
+}
+
+// read :: Str -> ?Str
+std::optional<std::string> morloc_read_str(const std::string& s) {
+    return s;
+}
+
+// read :: Str -> ?Bool
+std::optional<bool> morloc_read_bool(const std::string& s) {
+    if (s == "true" || s == "True" || s == "TRUE") return true;
+    if (s == "false" || s == "False" || s == "FALSE") return false;
+    return std::nullopt;
 }
 
 
@@ -410,6 +601,33 @@ bool morloc_eq(A x, A y){
    return x == y;
 }
 
+// optional<A> vs nullopt
+template <class A>
+bool morloc_eq(const std::optional<A>& x, std::nullopt_t) {
+   return !x.has_value();
+}
+
+template <class A>
+bool morloc_eq(std::nullopt_t, const std::optional<A>& x) {
+   return !x.has_value();
+}
+
+// nullopt vs nullopt
+inline bool morloc_eq(std::nullopt_t, std::nullopt_t) {
+   return true;
+}
+
+// non-optional vs nullopt (always false: a concrete value is never null)
+template <class A, typename = std::enable_if_t<!std::is_same_v<A, std::nullopt_t>>>
+bool morloc_eq(const A&, std::nullopt_t) {
+   return false;
+}
+
+template <class A, typename = std::enable_if_t<!std::is_same_v<A, std::nullopt_t>>>
+bool morloc_eq(std::nullopt_t, const A&) {
+   return false;
+}
+
 
 bool morloc_not(bool x){
     return !x;
@@ -421,6 +639,26 @@ bool morloc_and(bool x, bool y){
 
 bool morloc_or(bool x, bool y){
     return x || y;
+}
+
+// --- Sequence conversions ---
+
+// toDeque :: [a] -> Deque a
+template <class A>
+std::deque<A> morloc_toDeque(const std::vector<A>& xs) {
+    return std::deque<A>(xs.begin(), xs.end());
+}
+
+// toVector :: [a] -> Vector a  (identity in C++, both are std::vector)
+template <class A>
+std::vector<A> morloc_toVector(const std::vector<A>& xs) {
+    return xs;
+}
+
+// toArray :: [a] -> Array a  (identity in C++, both are std::vector)
+template <class A>
+std::vector<A> morloc_toArray(const std::vector<A>& xs) {
+    return xs;
 }
 
 #endif
