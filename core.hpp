@@ -74,11 +74,6 @@ std::vector<A> morloc_slice(INDEX i, INDEX j, std::vector<A> vec) {
 }
 
 
-template <class A>
-A morloc_add(A x, A y){
-    return x + y;
-}
-
 // List (vector) concat
 template <class A>
 std::vector<A> morloc_list_add(const std::vector<A>& xs, const std::vector<A>& ys){
@@ -97,19 +92,18 @@ std::deque<A> morloc_list_add(const std::deque<A>& xs, const std::deque<A>& ys){
     return zs;
 }
 
+// Integer division for floats: divide then floor
+// e.g. floor_div(-7.0, 2.0) == -4.0  (not -3.0)
 template <class A>
-A morloc_sub(A x, A y){
-    return x - y;
+A morloc_floor_div(A x, A y) {
+    return std::floor(x / y);
 }
 
+// Modulus for floats, satisfying: x == y * floor_div(x, y) + mod(x, y)
+// e.g. float_mod(-7.0, 2.0) == 1.0  (not -1.0 as fmod would give)
 template <class A>
-A morloc_mul(A x, A y){
-    return x * y;
-}
-
-template <class A>
-A morloc_div(A x, A y){
-    return x / y;
+A morloc_float_mod(A x, A y) {
+    return x - y * std::floor(x / y);
 }
 
 template <class A>
@@ -120,11 +114,6 @@ A morloc_inv(A x){
 template <class A>
 A morloc_neg(A x){
     return (-1) * x;
-}
-
-template <class A>
-A morloc_mod(A x, A y){
-    return x % y;
 }
 
 template <class A>

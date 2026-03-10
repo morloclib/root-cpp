@@ -71,172 +71,49 @@ instance Ord a where
   source Cpp from "core.hpp" ("morloc_le" as (<=))
 
 instance Integral Int where
-  source Cpp from "core.hpp"
+                , Int8
+                , Int16
+                , Int32
+                , Int64
+                , UInt8
+                , UInt16
+                , UInt32
+                , UInt64
+                , Real
+                , Float32
+                , Float64
+  %inline source Cpp from "core.hpp"
     ( "morloc_neg" as neg
     , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
+    , (+)
+    , (-)
+    , (*)
+    , (//)
+    , (%)
     )
   zero = 0
 
-instance Integral Int8 where
-  source Cpp from "core.hpp"
+instance Integral Float32
+                , Float64
+  %inline source Cpp from "core.hpp"
     ( "morloc_neg" as neg
     , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0
-
-instance Integral Int16 where
-  source Cpp from "core.hpp"
-    ( "morloc_neg" as neg
-    , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0
-
-instance Integral Int32 where
-  source Cpp from "core.hpp"
-    ( "morloc_neg" as neg
-    , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0
-
-instance Integral Int64 where
-  source Cpp from "core.hpp"
-    ( "morloc_neg" as neg
-    , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0
-
-instance Integral UInt8 where
-  source Cpp from "core.hpp"
-    ( "morloc_neg" as neg
-    , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0
-
-instance Integral UInt16 where
-  source Cpp from "core.hpp"
-    ( "morloc_neg" as neg
-    , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0
-
-instance Integral UInt32 where
-  source Cpp from "core.hpp"
-    ( "morloc_neg" as neg
-    , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0
-
-instance Integral UInt64 where
-  source Cpp from "core.hpp"
-    ( "morloc_neg" as neg
-    , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0
-
-
-instance Integral Real where
-  source Cpp from "core.hpp"
-    ( "morloc_neg" as neg
-    , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0.0
-
-instance Integral Float32 where
-  source Cpp from "core.hpp"
-    ( "morloc_neg" as neg
-    , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0.0
-
-instance Integral Float64 where
-  source Cpp from "core.hpp"
-    ( "morloc_neg" as neg
-    , "morloc_abs" as abs
-    , "morloc_add" as (+)
-    , "morloc_sub" as (-)
-    , "morloc_mul" as (*)
-    , "morloc_div" as (//)
-    , "morloc_mod" as (%)
-    )
-  zero = 0.0
-
-instance Numeric Real where
-  source Cpp from "core.hpp"
-    ( "morloc_inv" as inv
-    , "morloc_div" as (/)
+    , (+)
+    , (-)
+    , (*)
+    , "morloc_floor_div" as (//)
+    , "morloc_float_mod" as (%)
     , "morloc_pow" as (**)
-    , "morloc_ln" as ln
     )
+  zero = 0
 
-instance Numeric Float32 where
-  source Cpp from "core.hpp"
+instance Numeric Real
+               , Float32
+               , Float64 where
+  %inline source Cpp from "core.hpp"
     ( "morloc_inv" as inv
-    , "morloc_div" as (/)
-    , "morloc_pow" as (**)
     , "morloc_ln" as ln
-    )
-
-instance Numeric Float64 where
-  source Cpp from "core.hpp"
-    ( "morloc_inv" as inv
-    , "morloc_div" as (/)
-    , "morloc_pow" as (**)
-    , "morloc_ln" as ln
+    , (/)
     )
 
 instance Semigroup Str where
