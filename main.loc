@@ -33,12 +33,13 @@ type Cpp => UInt64  = "uint64_t"
 -- used to force C++ usage, mostly in testing
 idcpp a :: a -> a
 
+%inline
 source Cpp from "core.hpp"
     ( "morloc_id" as idcpp
     , "morloc_branch" as branch
     , "morloc_not" as not
-    , "morloc_and" as (&&)
-    , "morloc_or" as (||)
+    , (&&)
+    , (||)
     , "morloc_zipWith" as zipWith
     , "morloc_reverse" as reverse
     , "morloc_sort" as sort
@@ -65,36 +66,35 @@ source Cpp from "core.hpp"
     )
 
 instance Eq a where
-  source Cpp from "core.hpp" ("morloc_eq" as (==))
+  %inline source Cpp from "core.hpp" ("morloc_eq" as (==))
 
 instance Ord a where
-  source Cpp from "core.hpp" ("morloc_le" as (<=))
+  %inline source Cpp from "core.hpp" ("morloc_le" as (<=))
 
-instance Integral Int where
-                , Int8
-                , Int16
-                , Int32
-                , Int64
-                , UInt8
-                , UInt16
-                , UInt32
-                , UInt64
-                , Real
-                , Float32
-                , Float64
+instance Integral Int
+       , Integral Int8
+       , Integral Int16
+       , Integral Int32
+       , Integral Int64
+       , Integral UInt8
+       , Integral UInt16
+       , Integral UInt32
+       , Integral UInt64 where
   %inline source Cpp from "core.hpp"
     ( "morloc_neg" as neg
     , "morloc_abs" as abs
     , (+)
     , (-)
     , (*)
-    , (//)
+    , (/) as (//)
     , (%)
+    , "morloc_pow" as (**)
     )
   zero = 0
 
-instance Integral Float32
-                , Float64
+instance Integral Real
+       , Integral Float32
+       , Integral Float64 where
   %inline source Cpp from "core.hpp"
     ( "morloc_neg" as neg
     , "morloc_abs" as abs
@@ -105,11 +105,11 @@ instance Integral Float32
     , "morloc_float_mod" as (%)
     , "morloc_pow" as (**)
     )
-  zero = 0
+  zero = 0.0
 
 instance Numeric Real
-               , Float32
-               , Float64 where
+       , Numeric Float32
+       , Numeric Float64 where
   %inline source Cpp from "core.hpp"
     ( "morloc_inv" as inv
     , "morloc_ln" as ln
@@ -117,121 +117,62 @@ instance Numeric Real
     )
 
 instance Semigroup Str where
-  source Cpp from "core.hpp" ("morloc_add" as (<>))
+  %inline source Cpp from "core.hpp" ((+) as (<>))
 
 instance Monoid Str where
   mempty = ""
 
-instance Semigroup (List a) where
-  source Cpp from "core.hpp" ("morloc_list_add" as (<>))
 
-instance Monoid (List a) where
+instance Semigroup (List a)
+       , Semigroup (Deque a)
+       , Semigroup (Vector a)
+       , Semigroup (Array a) where
+  %inline source Cpp from "core.hpp" ("morloc_list_add" as (<>))
+
+
+instance Monoid (List a)
+       , Monoid (Vector a)
+       , Monoid (Deque a) where
   mempty = []
 
+instance Functor List
+       , Functor Vector
+       , Functor Deque
+       , Functor Array where
+  %inline source Cpp from "core.hpp" ("morloc_map" as map)
 
--- List instances
-instance Foldable List where
-  source Cpp from "core.hpp"
+instance Foldable Deque
+       , Foldable List
+       , Foldable Vector
+       , Foldable Array where
+  %inline source Cpp from "core.hpp"
     ( "morloc_fold" as fold
     , "morloc_fold1" as fold1
     , "morloc_safeFold1" as safeFold1
     )
 
-instance Functor List where
-  source Cpp from "core.hpp" ("morloc_map" as map)
-
-instance Indexed List where
-  source Cpp from "core.hpp"
+instance Indexed List
+       , Indexed Array
+       , Indexed Vector where
+  %inline source Cpp from "core.hpp"
     ( "morloc_at" as at
     , "morloc_slice" as slice
     )
 
-instance Stack List where
-  source Cpp from "core.hpp"
+instance Stack List
+       , Stack Deque where
+  %inline source Cpp from "core.hpp"
     ( "morloc_cons" as cons
     , "morloc_uncons" as uncons
     )
 
-instance Queue List where
-  source Cpp from "core.hpp"
+instance Queue List
+       , Queue Vector
+       , Queue Deque where
+  %inline source Cpp from "core.hpp"
     ( "morloc_snoc" as snoc
     , "morloc_unsnoc" as unsnoc
     )
-
-
--- Deque instances
-instance Foldable Deque where
-  source Cpp from "core.hpp"
-    ( "morloc_fold" as fold
-    , "morloc_fold1" as fold1
-    , "morloc_safeFold1" as safeFold1
-    )
-
-instance Functor Deque where
-  source Cpp from "core.hpp" ("morloc_map" as map)
-
-instance Stack Deque where
-  source Cpp from "core.hpp"
-    ( "morloc_cons" as cons
-    , "morloc_uncons" as uncons
-    )
-
-instance Queue Deque where
-  source Cpp from "core.hpp"
-    ( "morloc_snoc" as snoc
-    , "morloc_unsnoc" as unsnoc
-    )
-
-instance Semigroup (Deque a) where
-  source Cpp from "core.hpp" ("morloc_list_add" as (<>))
-
-
--- Vector instances (same as List, both map to std::vector)
-instance Foldable Vector where
-  source Cpp from "core.hpp"
-    ( "morloc_fold" as fold
-    , "morloc_fold1" as fold1
-    , "morloc_safeFold1" as safeFold1
-    )
-
-instance Functor Vector where
-  source Cpp from "core.hpp" ("morloc_map" as map)
-
-instance Indexed Vector where
-  source Cpp from "core.hpp"
-    ( "morloc_at" as at
-    , "morloc_slice" as slice
-    )
-
-instance Queue Vector where
-  source Cpp from "core.hpp"
-    ( "morloc_snoc" as snoc
-    , "morloc_unsnoc" as unsnoc
-    )
-
-instance Semigroup (Vector a) where
-  source Cpp from "core.hpp" ("morloc_list_add" as (<>))
-
-
--- Array instances (same as List, both map to std::vector)
-instance Foldable Array where
-  source Cpp from "core.hpp"
-    ( "morloc_fold" as fold
-    , "morloc_fold1" as fold1
-    , "morloc_safeFold1" as safeFold1
-    )
-
-instance Functor Array where
-  source Cpp from "core.hpp" ("morloc_map" as map)
-
-instance Indexed Array where
-  source Cpp from "core.hpp"
-    ( "morloc_at" as at
-    , "morloc_slice" as slice
-    )
-
-instance Semigroup (Array a) where
-  source Cpp from "core.hpp" ("morloc_list_add" as (<>))
 
 
 instance Show a where
