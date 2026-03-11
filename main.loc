@@ -125,8 +125,7 @@ instance Monoid Str where
 
 instance Semigroup (List a)
        , Semigroup (Deque a)
-       , Semigroup (Vector a)
-       , Semigroup (Array a) where
+       , Semigroup (Vector a) where
   %inline source Cpp from "core.hpp" ("morloc_list_add" as (<>))
 
 
