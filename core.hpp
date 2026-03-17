@@ -142,10 +142,9 @@ std::string morloc_show(A x){
 // --- map (Functor) ---
 
 // Vector overloads
-template <class A, class B, class F>
-std::vector<B> morloc_map(F f, const std::vector<A>& xs) {
-    static_assert(std::is_invocable_r_v<B, F, A>,
-                  "Function f must be callable with type A and return type B");
+template <class A, class F>
+auto morloc_map(F f, const std::vector<A>& xs) -> std::vector<std::invoke_result_t<F, A>> {
+    using B = std::invoke_result_t<F, A>;
     std::vector<B> ys;
     ys.reserve(xs.size());
     for(const auto& x : xs) {
@@ -154,16 +153,10 @@ std::vector<B> morloc_map(F f, const std::vector<A>& xs) {
     return ys;
 }
 
+// Deque overload
 template <class A, class F>
-auto morloc_map(F f, const std::vector<A>& xs) -> std::vector<std::invoke_result_t<F, A>> {
-    return morloc_map<A, std::invoke_result_t<F, A>, F>(f, xs);
-}
-
-// Deque overloads
-template <class A, class B, class F>
-std::deque<B> morloc_map(F f, const std::deque<A>& xs) {
-    static_assert(std::is_invocable_r_v<B, F, A>,
-                  "Function f must be callable with type A and return type B");
+auto morloc_map(F f, const std::deque<A>& xs) -> std::deque<std::invoke_result_t<F, A>> {
+    using B = std::invoke_result_t<F, A>;
     std::deque<B> ys;
     for(const auto& x : xs) {
         ys.push_back(f(x));
@@ -171,21 +164,12 @@ std::deque<B> morloc_map(F f, const std::deque<A>& xs) {
     return ys;
 }
 
-template <class A, class F>
-auto morloc_map(F f, const std::deque<A>& xs) -> std::deque<std::invoke_result_t<F, A>> {
-    return morloc_map<A, std::invoke_result_t<F, A>, F>(f, xs);
-}
 
-
-template <class A, class B, class C, class F>
-std::vector<C> morloc_zipWith(
-        F f,
-        const std::vector<A>& xs,
-        const std::vector<B>& ys
-    )
+template <class A, class B, class F>
+auto morloc_zipWith(F f, const std::vector<A>& xs, const std::vector<B>& ys)
+    -> std::vector<std::invoke_result_t<F, A, B>>
 {
-    static_assert(std::is_invocable_r_v<C, F, A, B>,
-                  "Function f must be callable with type A and return type B");
+    using C = std::invoke_result_t<F, A, B>;
     std::size_t N = std::min(xs.size(), ys.size());
     std::vector<C> zs(N);
     for(std::size_t i = 0; i < N; i++){
@@ -259,8 +243,10 @@ std::optional<A> morloc_safeFold1(F&& f, const std::deque<A>& xs) {
 
 
 // branch :: (a -> Bool) -> (a -> b) -> (a -> b) -> a -> b
-template <class A, class B, class Cond, class F1, class F2>
-B morloc_branch(Cond&& cond, F1&& f1, F2&& f2, const A& x) {
+template <class Cond, class F1, class F2, class A>
+auto morloc_branch(Cond&& cond, F1&& f1, F2&& f2, const A& x)
+    -> std::invoke_result_t<F1, const A&>
+{
     if (cond(x)) {
         return f1(x);
     } else {
@@ -269,11 +255,8 @@ B morloc_branch(Cond&& cond, F1&& f1, F2&& f2, const A& x) {
 }
 
 // filter :: (a -> Bool) -> [a] -> [a]
-template <class A>
-std::vector<A> morloc_filter(
-    std::function<bool(A)> f,
-    const std::vector<A>& xs
-){
+template <class A, class F>
+std::vector<A> morloc_filter(F f, const std::vector<A>& xs){
     std::vector<A> ys;
     for(std::size_t i = 0; i < xs.size(); i++){
         if (f(xs[i])){
@@ -284,8 +267,8 @@ std::vector<A> morloc_filter(
 }
 
 // sortBy :: (a -> a -> Bool) -> [a] -> [a]
-template <class A>
-std::vector<A> morloc_sortBy(std::function<bool(A, A)> cmp, const std::vector<A>& xs) {
+template <class A, class F>
+std::vector<A> morloc_sortBy(F cmp, const std::vector<A>& xs) {
     std::vector<A> result(xs);
     std::sort(result.begin(), result.end(), cmp);
     return result;
@@ -298,8 +281,8 @@ std::vector<A> morloc_replicate(int n, const A& x) {
 }
 
 // takeWhile :: (a -> Bool) -> [a] -> [a]
-template <class A>
-std::vector<A> morloc_takeWhile(std::function<bool(A)> f, const std::vector<A>& xs) {
+template <class A, class F>
+std::vector<A> morloc_takeWhile(F f, const std::vector<A>& xs) {
     std::vector<A> result;
     for (const auto& x : xs) {
         if (!f(x)) break;
@@ -309,8 +292,8 @@ std::vector<A> morloc_takeWhile(std::function<bool(A)> f, const std::vector<A>& 
 }
 
 // dropWhile :: (a -> Bool) -> [a] -> [a]
-template <class A>
-std::vector<A> morloc_dropWhile(std::function<bool(A)> f, const std::vector<A>& xs) {
+template <class A, class F>
+std::vector<A> morloc_dropWhile(F f, const std::vector<A>& xs) {
     std::vector<A> result;
     bool dropping = true;
     for (const auto& x : xs) {
@@ -322,8 +305,8 @@ std::vector<A> morloc_dropWhile(std::function<bool(A)> f, const std::vector<A>& 
 }
 
 // partition :: (a -> Bool) -> [a] -> ([a], [a])
-template <class A>
-std::tuple<std::vector<A>, std::vector<A>> morloc_partition(std::function<bool(A)> f, const std::vector<A>& xs) {
+template <class A, class F>
+std::tuple<std::vector<A>, std::vector<A>> morloc_partition(F f, const std::vector<A>& xs) {
     std::vector<A> yes, no;
     for (const auto& x : xs) {
         if (f(x)) yes.push_back(x);
@@ -333,8 +316,8 @@ std::tuple<std::vector<A>, std::vector<A>> morloc_partition(std::function<bool(A
 }
 
 // scanl :: (b -> a -> b) -> b -> [a] -> [b]
-template <class B, class A>
-std::vector<B> morloc_scanl(std::function<B(B, A)> f, B init, const std::vector<A>& xs) {
+template <class B, class A, class F>
+std::vector<B> morloc_scanl(F f, B init, const std::vector<A>& xs) {
     std::vector<B> result;
     result.push_back(init);
     B acc = init;
@@ -469,8 +452,8 @@ std::vector<A> morloc_iterate(int n, F&& f, A x) {
 }
 
 // groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
-template <class A>
-std::vector<std::vector<A>> morloc_groupBy(std::function<bool(A, A)> eq, const std::vector<A>& xs) {
+template <class A, class F>
+std::vector<std::vector<A>> morloc_groupBy(F eq, const std::vector<A>& xs) {
     std::vector<std::vector<A>> result;
     if (xs.empty()) return result;
     std::vector<A> group;
@@ -489,8 +472,8 @@ std::vector<std::vector<A>> morloc_groupBy(std::function<bool(A, A)> eq, const s
 }
 
 // find :: (a -> Bool) -> [a] -> ?a
-template <class A>
-std::optional<A> morloc_find(std::function<bool(A)> f, const std::vector<A>& xs) {
+template <class A, class F>
+std::optional<A> morloc_find(F f, const std::vector<A>& xs) {
     for (const auto& x : xs) {
         if (f(x)) return x;
     }
@@ -615,6 +598,17 @@ bool morloc_eq(const A&, std::nullopt_t) {
 template <class A, typename = std::enable_if_t<!std::is_same_v<A, std::nullopt_t>>>
 bool morloc_eq(std::nullopt_t, const A&) {
    return false;
+}
+
+// non-optional vs optional (from coercion: value compared to typed optional)
+template <class A>
+bool morloc_eq(const A& x, const std::optional<A>& y) {
+   return y.has_value() && morloc_eq(x, *y);
+}
+
+template <class A>
+bool morloc_eq(const std::optional<A>& x, const A& y) {
+   return x.has_value() && morloc_eq(*x, y);
 }
 
 
