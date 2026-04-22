@@ -129,12 +129,14 @@ instance Monoid Str where
 
 
 instance Semigroup (List a)
-       , Semigroup (Deque a) where
+       , Semigroup (Deque a)
+       , Semigroup (Array a) where
   %inline source Cpp from "core.hpp" ("morloc_list_add" as (<>))
 
 
 instance Monoid (List a)
-       , Monoid (Deque a) where
+       , Monoid (Deque a)
+       , Monoid (Array a) where
   mempty = []
 
 instance Functor List
