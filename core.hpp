@@ -242,18 +242,6 @@ std::optional<A> morloc_safeFold1(F&& f, const std::deque<A>& xs) {
 }
 
 
-// branch :: (a -> Bool) -> (a -> b) -> (a -> b) -> a -> b
-template <class Cond, class F1, class F2, class A>
-auto morloc_branch(Cond&& cond, F1&& f1, F2&& f2, const A& x)
-    -> std::invoke_result_t<F1, const A&>
-{
-    if (cond(x)) {
-        return f1(x);
-    } else {
-        return f2(x);
-    }
-}
-
 // filter :: (a -> Bool) -> [a] -> [a]
 template <class A, class F>
 std::vector<A> morloc_filter(F f, const std::vector<A>& xs){

@@ -42,7 +42,6 @@ idcpp :: a -> a
 %inline
 source Cpp from "core.hpp"
     ( "morloc_id" as idcpp
-    , "morloc_branch" as branch
     , "morloc_not" as not
     , (&&)
     , (||)
