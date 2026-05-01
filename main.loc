@@ -8,15 +8,8 @@ type Cpp => Int = "int"
 type Cpp => Str = "std::string"
 type Cpp => Bool = "bool"
 type Cpp => (List a) = "std::vector<$1>" a
-type Cpp => (Array a) = "std::vector<$1>" a
+type Cpp => (Array a) = List a -- the default List is already an indexable vector
 type Cpp => (Deque a) = "std::deque<$1>" a
-type Cpp => (Vector (n :: Nat) a) = "std::vector<$1>" a
-type Cpp => (Matrix (m :: Nat) (n :: Nat) a) = "std::vector<std::vector<$1>>" a
-type Cpp => (Tensor1 (d1 :: Nat) a) = "mlc::Tensor1<$1>" a
-type Cpp => (Tensor2 (d1 :: Nat) (d2 :: Nat) a) = "mlc::Tensor2<$1>" a
-type Cpp => (Tensor3 (d1 :: Nat) (d2 :: Nat) (d3 :: Nat) a) = "mlc::Tensor3<$1>" a
-type Cpp => (Tensor4 (d1 :: Nat) (d2 :: Nat) (d3 :: Nat) (d4 :: Nat) a) = "mlc::Tensor4<$1>" a
-type Cpp => (Tensor5 (d1 :: Nat) (d2 :: Nat) (d3 :: Nat) (d4 :: Nat) (d5 :: Nat) a) = "mlc::Tensor5<$1>" a
 type Cpp => (Tuple2 a b) = "std::tuple<$1,$2>" a b
 type Cpp => (Tuple3 a b c) = "std::tuple<$1,$2,$3>" a b c
 type Cpp => (Tuple4 a b c d) = "std::tuple<$1,$2,$3,$4>" a b c d
