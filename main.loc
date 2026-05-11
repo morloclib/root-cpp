@@ -104,6 +104,20 @@ instance Integral Real
     )
   zero = 0.0
 
+instance Negatable Int
+       , Negatable Int8
+       , Negatable Int16
+       , Negatable Int32
+       , Negatable Int64
+       , Negatable UInt8
+       , Negatable UInt16
+       , Negatable UInt32
+       , Negatable UInt64
+       , Negatable Real
+       , Negatable Float32
+       , Negatable Float64 where
+  %inline source Cpp from "core.hpp" ("morloc_neg" as negate)
+
 instance Numeric Real
        , Numeric Float32
        , Numeric Float64 where
