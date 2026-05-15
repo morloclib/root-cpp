@@ -496,19 +496,19 @@ std::vector<std::tuple<A, std::vector<B>>> morloc_groupSort(const std::vector<st
     return result;
 }
 
-// range :: Int -> Int -> [Int]
+// range :: Int -> Int -> [Int]  (half-open interval [a, b))
 std::vector<int> morloc_range(int a, int b) {
     std::vector<int> result;
-    for (int i = a; i <= b; i++) {
+    for (int i = a; i < b; i++) {
         result.push_back(i);
     }
     return result;
 }
 
-// rangeStep :: Int -> Int -> Int -> [Int]
+// rangeStep :: Int -> Int -> Int -> [Int]  (half-open interval [a, b))
 std::vector<int> morloc_rangeStep(int a, int b, int step) {
     std::vector<int> result;
-    for (int i = a; i <= b; i += step) {
+    for (int i = a; i < b; i += step) {
         result.push_back(i);
     }
     return result;
