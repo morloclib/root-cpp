@@ -51,26 +51,65 @@ std::tuple<std::vector<A>,std::vector<B>> morloc_unzip(const std::vector<std::tu
 }
 
 
-template <class A, class INDEX>
-A morloc_at(INDEX i, const std::vector<A>& xs){
+// One template covers every IndexLike instance. UInt64 above 2^63-1 wraps to
+// a negative int64_t; documented known issue.
+template <class T>
+int64_t morloc_to_index(T x) {
+    return static_cast<int64_t>(x);
+}
+
+// Negative indices wrap from the end (Python semantics) so .[-1] returns the
+// last element, .[-2] the second-to-last, and so on.
+template <class A>
+A morloc_at(int64_t i, const std::vector<A>& xs){
+    if (i < 0) i += static_cast<int64_t>(xs.size());
     return xs[i];
 }
 
-template <class A, class INDEX>
-std::vector<A> morloc_slice(INDEX i, INDEX j, std::vector<A> vec) {
-    INDEX size = static_cast<INDEX>(vec.size());
-
-    if (i < 0) i += size;
-    if (j < 0) j += size;
-
-    i = std::max(static_cast<INDEX>(0), std::min(i, size));
-    j = std::max(static_cast<INDEX>(0), std::min(j, size));
-
-    if (i > j) {
-        return std::vector<A>();
+// Bounds arrive from morloc as ?Int64; raw int literals coerce implicitly
+// through std::optional<int64_t>'s converting constructor.
+template <class A>
+std::vector<A> morloc_slice(
+    std::optional<int64_t> start,
+    std::optional<int64_t> stop,
+    std::optional<int64_t> step,
+    std::vector<A> vec) {
+    int64_t n = static_cast<int64_t>(vec.size());
+    int64_t k = step.value_or(1);
+    if (k == 0) {
+        throw std::invalid_argument("slice step cannot be zero");
     }
-
-    return std::vector<A>(vec.begin() + i, vec.begin() + j);
+    int64_t i, j;
+    if (k > 0) {
+        i = start.value_or(0);
+        j = stop.value_or(n);
+    } else {
+        i = start.value_or(n - 1);
+        j = stop.value_or(-1);
+    }
+    // Negative bounds wrap from the end (Python semantics), but only when the
+    // bound was actually supplied -- a default of -1 for reverse step means
+    // "one before index 0" and must not wrap.
+    if (i < 0 && start.has_value()) i += n;
+    if (j < 0 && stop.has_value()) j += n;
+    if (k > 0) {
+        i = std::max(static_cast<int64_t>(0), std::min(i, n));
+        j = std::max(static_cast<int64_t>(0), std::min(j, n));
+    } else {
+        i = std::max(static_cast<int64_t>(-1), std::min(i, n - 1));
+        j = std::max(static_cast<int64_t>(-1), std::min(j, n - 1));
+    }
+    std::vector<A> result;
+    if (k > 0) {
+        for (int64_t p = i; p < j; p += k) {
+            result.push_back(vec[p]);
+        }
+    } else {
+        for (int64_t p = i; p > j; p += k) {
+            result.push_back(vec[p]);
+        }
+    }
+    return result;
 }
 
 
@@ -408,23 +447,6 @@ A morloc_at(INDEX i, const std::deque<A>& xs){
     return xs[i];
 }
 
-template <class A, class INDEX>
-std::deque<A> morloc_slice(INDEX i, INDEX j, std::deque<A> dq) {
-    INDEX size = static_cast<INDEX>(dq.size());
-
-    if (i < 0) i += size;
-    if (j < 0) j += size;
-
-    i = std::max(static_cast<INDEX>(0), std::min(i, size));
-    j = std::max(static_cast<INDEX>(0), std::min(j, size));
-
-    if (i > j) {
-        return std::deque<A>();
-    }
-
-    return std::deque<A>(dq.begin() + i, dq.begin() + j);
-}
-
 // --- Other list operations ---
 
 // iterate :: Int -> (a -> a) -> a -> [a]
@@ -614,22 +636,17 @@ bool morloc_or(bool x, bool y){
 
 // --- Sequence conversions ---
 
-// toDeque :: [a] -> Deque a
+// Packable List <-> Deque
+// pack :: List a -> Deque a  (vector -> deque)
 template <class A>
-std::deque<A> morloc_toDeque(const std::vector<A>& xs) {
+std::deque<A> morloc_packDeque(const std::vector<A>& xs) {
     return std::deque<A>(xs.begin(), xs.end());
 }
 
-// toVector :: [a] -> Vector a  (identity in C++, both are std::vector)
+// unpack :: Deque a -> List a  (deque -> vector)
 template <class A>
-std::vector<A> morloc_toVector(const std::vector<A>& xs) {
-    return xs;
-}
-
-// toArray :: [a] -> Array a  (identity in C++, both are std::vector)
-template <class A>
-std::vector<A> morloc_toArray(const std::vector<A>& xs) {
-    return xs;
+std::vector<A> morloc_unpackDeque(const std::deque<A>& xs) {
+    return std::vector<A>(xs.begin(), xs.end());
 }
 
 #endif
