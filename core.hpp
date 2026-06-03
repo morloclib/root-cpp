@@ -53,15 +53,31 @@ std::tuple<std::vector<A>,std::vector<B>> morloc_unzip(const std::vector<std::tu
 
 // One template covers every IndexLike instance. UInt64 above 2^63-1 wraps to
 // a negative int64_t; documented known issue.
+//
+// Returns std::optional<int64_t>: an absent input (std::nullopt) passes
+// through so slicer bounds can be left blank (the desugar emits
+// `(Null :: ?Int64)` for an empty position, and a user expression
+// evaluating to nullopt composes the same way). Non-empty values cast
+// to int64_t and wrap in an Optional.
 template <class T>
-int64_t morloc_to_index(T x) {
-    return static_cast<int64_t>(x);
+std::optional<int64_t> morloc_to_index(T x) {
+    return std::optional<int64_t>{static_cast<int64_t>(x)};
+}
+
+template <class T>
+std::optional<int64_t> morloc_to_index(std::optional<T> x) {
+    return x ? std::optional<int64_t>{static_cast<int64_t>(*x)} : std::nullopt;
 }
 
 // Negative indices wrap from the end (Python semantics) so .[-1] returns the
 // last element, .[-2] the second-to-last, and so on.
+//
+// __access_index__ takes ?Int64 to match __to_index__'s return shape,
+// but a nullopt index has no semantic meaning at runtime; throw.
 template <class A>
-A morloc_at(int64_t i, const std::vector<A>& xs){
+A morloc_at(std::optional<int64_t> oi, const std::vector<A>& xs){
+    if (!oi) throw std::runtime_error("morloc_at: index is nullopt");
+    int64_t i = *oi;
     if (i < 0) i += static_cast<int64_t>(xs.size());
     return xs[i];
 }
@@ -442,9 +458,10 @@ std::tuple<std::deque<A>, A> morloc_unsnoc(const std::deque<A>& xs) {
 
 // --- Indexed for Deque ---
 
-template <class A, class INDEX>
-A morloc_at(INDEX i, const std::deque<A>& xs){
-    return xs[i];
+template <class A>
+A morloc_at(std::optional<int64_t> oi, const std::deque<A>& xs){
+    if (!oi) throw std::runtime_error("morloc_at: deque index is nullopt");
+    return xs[*oi];
 }
 
 // --- Other list operations ---
