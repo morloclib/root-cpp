@@ -20,15 +20,6 @@ A morloc_id(const A& x){
 }
 
 
-// Reverse a vector without mutating the input
-template<typename T>
-std::vector<T> morloc_reverse(const std::vector<T>& xs) {
-    std::vector<T> result(xs);
-    std::reverse(result.begin(), result.end());
-    return result;
-}
-
-
 // Sort a vector without mutating the input
 template<typename T>
 std::vector<T> morloc_sort(const std::vector<T>& xs) {
