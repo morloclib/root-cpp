@@ -28,8 +28,18 @@ type Cpp => UInt16  = "uint16_t"
 type Cpp => UInt32  = "uint32_t"
 type Cpp => UInt64  = "uint64_t"
 
+type Cpp => (IFile a) = "uint64_t"
+type Cpp => (IStream a) = "uint64_t"
+type Cpp => (OStream a) = "uint64_t"
+
 -- used to force C++ usage, mostly in testing
 idcpp :: a -> a
+
+instance Sizeable Str
+       , Sizeable (List a) where
+  %inline
+  source Cpp from "core.hpp" ("morloc_size" as size)
+
 
 %inline
 source Cpp from "core.hpp"

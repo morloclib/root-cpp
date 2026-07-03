@@ -199,6 +199,11 @@ auto morloc_map(F f, const std::vector<A>& xs) -> std::vector<std::invoke_result
     return ys;
 }
 
+template <class A>
+auto morloc_size(const A& x){
+  return x.size();
+}
+
 // Deque overload
 template <class A, class F>
 auto morloc_map(F f, const std::deque<A>& xs) -> std::deque<std::invoke_result_t<F, A>> {
