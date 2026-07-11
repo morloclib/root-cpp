@@ -178,6 +178,73 @@ A morloc_ln(A x){
 }
 
 template <class A>
+double morloc_to_real(A x){
+    return static_cast<double>(x);
+}
+
+// -------------------- Numeric conversions --------------------
+//
+// Per-target thin wrappers around a master template. Morloc codegen calls
+// each wrapper with an argument-deducible template, so the source type is
+// picked up from the argument and the return type is fixed. This avoids
+// needing return-type template arguments in the emitted call sites.
+
+template<class To, class From>
+inline To morloc_into_gen(From x){
+    return static_cast<To>(x);
+}
+
+template<class F> inline uint16_t morloc_into_u16(F x){ return morloc_into_gen<uint16_t>(x); }
+template<class F> inline uint32_t morloc_into_u32(F x){ return morloc_into_gen<uint32_t>(x); }
+template<class F> inline uint64_t morloc_into_u64(F x){ return morloc_into_gen<uint64_t>(x); }
+template<class F> inline int16_t  morloc_into_i16(F x){ return morloc_into_gen<int16_t>(x); }
+template<class F> inline int32_t  morloc_into_i32(F x){ return morloc_into_gen<int32_t>(x); }
+template<class F> inline int64_t  morloc_into_i64(F x){ return morloc_into_gen<int64_t>(x); }
+template<class F> inline int      morloc_into_int(F x){ return morloc_into_gen<int>(x); }
+template<class F> inline float    morloc_into_f32(F x){ return morloc_into_gen<float>(x); }
+template<class F> inline double   morloc_into_f64(F x){ return morloc_into_gen<double>(x); }
+
+// PartialInto: bounds-checked conversion. Fails on out-of-range (returns
+// nullopt), on non-integer floats, and on non-finite floats. The float
+// bounds are computed with ldexp so int64/uint64 boundaries are handled
+// exactly (their max value cannot round-trip through double).
+
+template<class To, class From>
+inline std::optional<To> morloc_try_into_impl(From x){
+    if constexpr (std::is_floating_point_v<From>){
+        if (!std::isfinite(x)) return std::nullopt;
+        if (std::trunc(x) != x) return std::nullopt;
+        const int width = std::numeric_limits<To>::digits;
+        double max_excl = std::ldexp(1.0, width);
+        double min_val = std::is_signed_v<To> ? -std::ldexp(1.0, width) : 0.0;
+        if (x < min_val || x >= max_excl) return std::nullopt;
+        return static_cast<To>(x);
+    } else {
+        if constexpr (std::is_signed_v<From> && std::is_unsigned_v<To>){
+            if (x < 0) return std::nullopt;
+            using U = std::make_unsigned_t<From>;
+            if (static_cast<U>(x) > std::numeric_limits<To>::max()) return std::nullopt;
+        } else if constexpr (std::is_unsigned_v<From> && std::is_signed_v<To>){
+            if (x > static_cast<From>(std::numeric_limits<To>::max())) return std::nullopt;
+        } else {
+            if (x < std::numeric_limits<To>::min()) return std::nullopt;
+            if (x > std::numeric_limits<To>::max()) return std::nullopt;
+        }
+        return static_cast<To>(x);
+    }
+}
+
+template<class F> inline std::optional<uint8_t>  morloc_try_u8(F x) { return morloc_try_into_impl<uint8_t>(x); }
+template<class F> inline std::optional<uint16_t> morloc_try_u16(F x){ return morloc_try_into_impl<uint16_t>(x); }
+template<class F> inline std::optional<uint32_t> morloc_try_u32(F x){ return morloc_try_into_impl<uint32_t>(x); }
+template<class F> inline std::optional<uint64_t> morloc_try_u64(F x){ return morloc_try_into_impl<uint64_t>(x); }
+template<class F> inline std::optional<int8_t>   morloc_try_i8(F x) { return morloc_try_into_impl<int8_t>(x); }
+template<class F> inline std::optional<int16_t>  morloc_try_i16(F x){ return morloc_try_into_impl<int16_t>(x); }
+template<class F> inline std::optional<int32_t>  morloc_try_i32(F x){ return morloc_try_into_impl<int32_t>(x); }
+template<class F> inline std::optional<int64_t>  morloc_try_i64(F x){ return morloc_try_into_impl<int64_t>(x); }
+template<class F> inline std::optional<int>      morloc_try_int(F x){ return morloc_try_into_impl<int>(x); }
+
+template <class A>
 std::string morloc_show(A x){
     std::ostringstream s;
     s << x;
