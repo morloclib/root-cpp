@@ -42,12 +42,12 @@ std::tuple<std::vector<A>,std::vector<B>> morloc_unzip(const std::vector<std::tu
 }
 
 
-// One template covers every IndexLike instance. UInt64 above 2^63-1 wraps to
+// One template covers every IndexLike instance. U64 above 2^63-1 wraps to
 // a negative int64_t; documented known issue.
 //
 // Returns std::optional<int64_t>: an absent input (std::nullopt) passes
 // through so slicer bounds can be left blank (the desugar emits
-// `(Null :: ?Int64)` for an empty position, and a user expression
+// `(Null :: ?I64)` for an empty position, and a user expression
 // evaluating to nullopt composes the same way). Non-empty values cast
 // to int64_t and wrap in an Optional.
 template <class T>
@@ -63,7 +63,7 @@ std::optional<int64_t> morloc_to_index(std::optional<T> x) {
 // Negative indices wrap from the end (Python semantics) so .[-1] returns the
 // last element, .[-2] the second-to-last, and so on.
 //
-// __access_index__ takes ?Int64 to match __to_index__'s return shape,
+// __access_index__ takes ?I64 to match __to_index__'s return shape,
 // but a nullopt index has no semantic meaning at runtime; throw.
 template <class A>
 A morloc_at(std::optional<int64_t> oi, const std::vector<A>& xs){
@@ -73,7 +73,7 @@ A morloc_at(std::optional<int64_t> oi, const std::vector<A>& xs){
     return xs[i];
 }
 
-// Bounds arrive from morloc as ?Int64; raw int literals coerce implicitly
+// Bounds arrive from morloc as ?I64; raw int literals coerce implicitly
 // through std::optional<int64_t>'s converting constructor.
 template <class A>
 std::vector<A> morloc_slice(
