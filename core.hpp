@@ -204,45 +204,46 @@ template<class F> inline int      morloc_into_int(F x){ return morloc_into_gen<i
 template<class F> inline float    morloc_into_f32(F x){ return morloc_into_gen<float>(x); }
 template<class F> inline double   morloc_into_f64(F x){ return morloc_into_gen<double>(x); }
 
-// PartialInto: bounds-checked conversion. Fails on out-of-range (returns
-// nullopt), on non-integer floats, and on non-finite floats. The float
-// bounds are computed with ldexp so int64/uint64 boundaries are handled
-// exactly (their max value cannot round-trip through double).
+// PartialInto: bounds-checked conversion. Fails by throwing on out-of-range,
+// on non-integer floats, and on non-finite floats. Failures raise a
+// std::runtime_error so the <Err> effect propagates to the nearest @catch.
+// The float bounds are computed with ldexp so int64/uint64 boundaries are
+// handled exactly (their max value cannot round-trip through double).
 
 template<class To, class From>
-inline std::optional<To> morloc_try_into_impl(From x){
+inline To morloc_try_into_impl(From x){
     if constexpr (std::is_floating_point_v<From>){
-        if (!std::isfinite(x)) return std::nullopt;
-        if (std::trunc(x) != x) return std::nullopt;
+        if (!std::isfinite(x)) throw std::runtime_error("cannot convert non-finite float to integer");
+        if (std::trunc(x) != x) throw std::runtime_error("cannot convert non-integer float to integer");
         const int width = std::numeric_limits<To>::digits;
         double max_excl = std::ldexp(1.0, width);
         double min_val = std::is_signed_v<To> ? -std::ldexp(1.0, width) : 0.0;
-        if (x < min_val || x >= max_excl) return std::nullopt;
+        if (x < min_val || x >= max_excl) throw std::runtime_error("value out of range for target integer type");
         return static_cast<To>(x);
     } else {
         if constexpr (std::is_signed_v<From> && std::is_unsigned_v<To>){
-            if (x < 0) return std::nullopt;
+            if (x < 0) throw std::runtime_error("cannot convert negative value to unsigned type");
             using U = std::make_unsigned_t<From>;
-            if (static_cast<U>(x) > std::numeric_limits<To>::max()) return std::nullopt;
+            if (static_cast<U>(x) > std::numeric_limits<To>::max()) throw std::runtime_error("value out of range for target integer type");
         } else if constexpr (std::is_unsigned_v<From> && std::is_signed_v<To>){
-            if (x > static_cast<From>(std::numeric_limits<To>::max())) return std::nullopt;
+            if (x > static_cast<From>(std::numeric_limits<To>::max())) throw std::runtime_error("value out of range for target integer type");
         } else {
-            if (x < std::numeric_limits<To>::min()) return std::nullopt;
-            if (x > std::numeric_limits<To>::max()) return std::nullopt;
+            if (x < std::numeric_limits<To>::min()) throw std::runtime_error("value out of range for target integer type");
+            if (x > std::numeric_limits<To>::max()) throw std::runtime_error("value out of range for target integer type");
         }
         return static_cast<To>(x);
     }
 }
 
-template<class F> inline std::optional<uint8_t>  morloc_try_u8(F x) { return morloc_try_into_impl<uint8_t>(x); }
-template<class F> inline std::optional<uint16_t> morloc_try_u16(F x){ return morloc_try_into_impl<uint16_t>(x); }
-template<class F> inline std::optional<uint32_t> morloc_try_u32(F x){ return morloc_try_into_impl<uint32_t>(x); }
-template<class F> inline std::optional<uint64_t> morloc_try_u64(F x){ return morloc_try_into_impl<uint64_t>(x); }
-template<class F> inline std::optional<int8_t>   morloc_try_i8(F x) { return morloc_try_into_impl<int8_t>(x); }
-template<class F> inline std::optional<int16_t>  morloc_try_i16(F x){ return morloc_try_into_impl<int16_t>(x); }
-template<class F> inline std::optional<int32_t>  morloc_try_i32(F x){ return morloc_try_into_impl<int32_t>(x); }
-template<class F> inline std::optional<int64_t>  morloc_try_i64(F x){ return morloc_try_into_impl<int64_t>(x); }
-template<class F> inline std::optional<int>      morloc_try_int(F x){ return morloc_try_into_impl<int>(x); }
+template<class F> inline uint8_t  morloc_try_u8(F x) { return morloc_try_into_impl<uint8_t>(x); }
+template<class F> inline uint16_t morloc_try_u16(F x){ return morloc_try_into_impl<uint16_t>(x); }
+template<class F> inline uint32_t morloc_try_u32(F x){ return morloc_try_into_impl<uint32_t>(x); }
+template<class F> inline uint64_t morloc_try_u64(F x){ return morloc_try_into_impl<uint64_t>(x); }
+template<class F> inline int8_t   morloc_try_i8(F x) { return morloc_try_into_impl<int8_t>(x); }
+template<class F> inline int16_t  morloc_try_i16(F x){ return morloc_try_into_impl<int16_t>(x); }
+template<class F> inline int32_t  morloc_try_i32(F x){ return morloc_try_into_impl<int32_t>(x); }
+template<class F> inline int64_t  morloc_try_i64(F x){ return morloc_try_into_impl<int64_t>(x); }
+template<class F> inline int      morloc_try_int(F x){ return morloc_try_into_impl<int>(x); }
 
 template <class A>
 std::string morloc_show(A x){
@@ -615,43 +616,6 @@ std::vector<int> morloc_rangeStep(int a, int b, int step) {
     }
     return result;
 }
-
-// read :: Str -> ?Int
-std::optional<int> morloc_read_int(const std::string& s) {
-    try {
-        std::size_t pos;
-        int val = std::stoi(s, &pos);
-        if (pos == s.size()) return val;
-        return std::nullopt;
-    } catch (...) {
-        return std::nullopt;
-    }
-}
-
-// read :: Str -> ?Real
-std::optional<double> morloc_read_real(const std::string& s) {
-    try {
-        std::size_t pos;
-        double val = std::stod(s, &pos);
-        if (pos == s.size()) return val;
-        return std::nullopt;
-    } catch (...) {
-        return std::nullopt;
-    }
-}
-
-// read :: Str -> ?Str
-std::optional<std::string> morloc_read_str(const std::string& s) {
-    return s;
-}
-
-// read :: Str -> ?Bool
-std::optional<bool> morloc_read_bool(const std::string& s) {
-    if (s == "true" || s == "True" || s == "TRUE") return true;
-    if (s == "false" || s == "False" || s == "FALSE") return false;
-    return std::nullopt;
-}
-
 
 template <class A>
 bool morloc_le(A x, A y){

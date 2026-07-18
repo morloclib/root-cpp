@@ -1,0 +1,5 @@
+#!/bin/sh
+# morloc-program v0.93.0
+exec morloc-nexus run "$0" "$@"
+### MANIFEST ###
+{"name":"test-root-cpp","build":{"path":"/home/z/projects/morloc-core/morloc-workspace/lib/stdlib/root-cpp","time":1784399925,"morloc_version":"0.93.0"},"pools":[{"lang":"cpp","exec":["/home/z/projects/morloc-core/morloc-workspace/lib/stdlib/root-cpp/pools/test-root-cpp/pool-cpp.out"],"socket":"pipe-cpp","pool_hash":"3d4b5083c6f5fa71","allow_string_null":true,"metadata":{}},{"lang":"py","exec":["python3","/home/z/projects/morloc-core/morloc-workspace/lib/stdlib/root-cpp/pools/test-root-cpp/pool.py"],"socket":"pipe-py","pool_hash":"07f97e4f9223787e","allow_string_null":true,"metadata":{}}],"commands":[{"name":"test","type":"remote","mid":1,"pool":0,"needed_pools":[0,1],"desc":[],"args":[],"return":{"schema":"b","type":"Bool","desc":[],"constraints":[],"metadata":{}},"constraints":[],"internal":false,"terminals":[],"metadata":{},"group":null}],"groups":[],"desc":[],"epilogues":[],"unsafe_skip_null_check":false,"inline_size":null,"no_shm":false,"tmpdir":null,"run_log":null,"capabilities":["log"],"metadata":{}}
