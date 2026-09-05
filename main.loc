@@ -28,9 +28,9 @@ type Cpp => U16  = "uint16_t"
 type Cpp => U32  = "uint32_t"
 type Cpp => U64  = "uint64_t"
 
-type Cpp => (IFile a) = "uint64_t"
-type Cpp => (IStream a) = "uint64_t"
-type Cpp => (OStream a) = "uint64_t"
+type Cpp => (IFile a) = "uint64_t" a
+type Cpp => (IStream a) = "uint64_t" a
+type Cpp => (OStream a) = "uint64_t" a
 
 -- used to force C++ usage, mostly in testing
 idcpp :: a -> a
