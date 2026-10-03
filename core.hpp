@@ -13,6 +13,9 @@
 #include <optional>
 #include <set>
 #include <type_traits>
+#include <limits>
+#include <csignal>
+#include <cstdlib>
 
 template <class A>
 A morloc_id(const A& x){
@@ -137,6 +140,35 @@ std::deque<A> morloc_list_add(const std::deque<A>& xs, const std::deque<A>& ys){
     zs.insert(zs.end(), ys.begin(), ys.end());
     return zs;
 }
+
+// Integer `//` and `%` are C's: the quotient truncates toward zero and the
+// remainder takes the dividend's sign. A zero divisor, or MIN // -1, traps on
+// x86; elsewhere the hardware returns a value, so raise the same SIGFPE.
+#if defined(__x86_64__) || defined(__i386__)
+template <class A>
+inline A morloc_int_div(A x, A y) { return x / y; }
+
+template <class A>
+inline A morloc_int_mod(A x, A y) { return x % y; }
+#else
+template <class A>
+inline void morloc_int_div_check(A x, A y) {
+    bool bad = y == 0;
+    if constexpr (std::is_signed_v<A>) {
+        bad = bad || (y == -1 && x == std::numeric_limits<A>::min());
+    }
+    if (__builtin_expect(bad, 0)) {
+        std::raise(SIGFPE);
+        std::abort();
+    }
+}
+
+template <class A>
+inline A morloc_int_div(A x, A y) { morloc_int_div_check(x, y); return x / y; }
+
+template <class A>
+inline A morloc_int_mod(A x, A y) { morloc_int_div_check(x, y); return x % y; }
+#endif
 
 // Integer division for floats: divide then floor
 // e.g. floor_div(-7.0, 2.0) == -4.0  (not -3.0)
