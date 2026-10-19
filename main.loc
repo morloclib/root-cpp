@@ -46,8 +46,6 @@ instance Sizeable Str
 source Cpp from "core.hpp"
     ( "morloc_id" as idcpp
     , "morloc_not" as not
-    , (&&)
-    , (||)
     , "morloc_zipWith" as zipWith
     , "morloc_sort" as sort
     , "morloc_sortBy" as sortBy
