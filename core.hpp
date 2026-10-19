@@ -336,7 +336,7 @@ auto morloc_zipWith(F f, const std::vector<A>& xs, const std::vector<B>& ys)
 template <class B, class A, class F>
 B morloc_fold(F&& f, B y, const std::vector<A>& xs) {
     for(const auto& x : xs) {
-        y = f(y, x);
+        y = f(std::move(y), x);
     }
     return y;
 }
@@ -345,7 +345,7 @@ template <class A, class F>
 A morloc_fold1(F&& f, const std::vector<A>& xs) {
     A acc = xs[0];
     for(std::size_t i = 1; i < xs.size(); i++) {
-        acc = f(acc, xs[i]);
+        acc = f(std::move(acc), xs[i]);
     }
     return acc;
 }
@@ -357,7 +357,7 @@ std::optional<A> morloc_safeFold1(F&& f, const std::vector<A>& xs) {
     }
     A acc = xs[0];
     for(std::size_t i = 1; i < xs.size(); i++) {
-        acc = f(acc, xs[i]);
+        acc = f(std::move(acc), xs[i]);
     }
     return acc;
 }
@@ -366,7 +366,7 @@ std::optional<A> morloc_safeFold1(F&& f, const std::vector<A>& xs) {
 template <class B, class A, class F>
 B morloc_fold(F&& f, B y, const std::deque<A>& xs) {
     for(const auto& x : xs) {
-        y = f(y, x);
+        y = f(std::move(y), x);
     }
     return y;
 }
@@ -375,7 +375,7 @@ template <class A, class F>
 A morloc_fold1(F&& f, const std::deque<A>& xs) {
     A acc = xs[0];
     for(std::size_t i = 1; i < xs.size(); i++) {
-        acc = f(acc, xs[i]);
+        acc = f(std::move(acc), xs[i]);
     }
     return acc;
 }
@@ -387,7 +387,7 @@ std::optional<A> morloc_safeFold1(F&& f, const std::deque<A>& xs) {
     }
     A acc = xs[0];
     for(std::size_t i = 1; i < xs.size(); i++) {
-        acc = f(acc, xs[i]);
+        acc = f(std::move(acc), xs[i]);
     }
     return acc;
 }
@@ -409,7 +409,7 @@ std::vector<A> morloc_filter(F f, const std::vector<A>& xs){
 template <class A, class F>
 std::vector<A> morloc_sortBy(F cmp, const std::vector<A>& xs) {
     std::vector<A> result(xs);
-    std::sort(result.begin(), result.end(), cmp);
+    std::sort(result.begin(), result.end(), [&cmp](const A& a, const A& b) { return cmp(a, b); });
     return result;
 }
 
@@ -461,7 +461,7 @@ std::vector<B> morloc_scanl(F f, B init, const std::vector<A>& xs) {
     result.push_back(init);
     B acc = init;
     for (const auto& x : xs) {
-        acc = f(acc, x);
+        acc = f(std::move(acc), x);
         result.push_back(acc);
     }
     return result;
@@ -569,7 +569,7 @@ std::vector<A> morloc_iterate(int n, F&& f, A x) {
     result.reserve(n);
     for (int i = 0; i < n; i++) {
         result.push_back(x);
-        x = f(x);
+        x = f(std::move(x));
     }
     return result;
 }
