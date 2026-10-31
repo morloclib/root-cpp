@@ -137,6 +137,7 @@ instance Semigroup Str where
 
 instance Monoid Str where
   mempty = ""
+  %inline source Cpp from "core.hpp" ("morloc_mconcat" as mconcat)
 
 
 instance Semigroup (List a)
@@ -147,6 +148,7 @@ instance Semigroup (List a)
 instance Monoid (List a)
        , Monoid (Deque a) where
   mempty = []
+  %inline source Cpp from "core.hpp" ("morloc_mconcat" as mconcat)
 
 instance Functor List
        , Functor Deque where

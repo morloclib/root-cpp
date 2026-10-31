@@ -1,6 +1,7 @@
 #ifndef __MORLOC__CORE_HPP__
 #define __MORLOC__CORE_HPP__
 
+#include <string>
 #include <vector>
 #include <deque>
 #include <algorithm>
@@ -138,6 +139,33 @@ template <class A>
 std::deque<A> morloc_list_add(const std::deque<A>& xs, const std::deque<A>& ys){
     std::deque<A> zs(xs);
     zs.insert(zs.end(), ys.begin(), ys.end());
+    return zs;
+}
+
+// Monoid mconcat: one pass over the parts
+inline std::string morloc_mconcat(const std::vector<std::string>& xs){
+    std::size_t n = 0;
+    for (const auto& x : xs) n += x.size();
+    std::string s;
+    s.reserve(n);
+    for (const auto& x : xs) s += x;
+    return s;
+}
+
+template <class A>
+std::vector<A> morloc_mconcat(const std::vector<std::vector<A>>& xss){
+    std::size_t n = 0;
+    for (const auto& xs : xss) n += xs.size();
+    std::vector<A> zs;
+    zs.reserve(n);
+    for (const auto& xs : xss) zs.insert(zs.end(), xs.begin(), xs.end());
+    return zs;
+}
+
+template <class A>
+std::deque<A> morloc_mconcat(const std::vector<std::deque<A>>& xss){
+    std::deque<A> zs;
+    for (const auto& xs : xss) zs.insert(zs.end(), xs.begin(), xs.end());
     return zs;
 }
 
