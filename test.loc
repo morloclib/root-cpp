@@ -1,4 +1,6 @@
 module test-root-cpp (test)
 
-import root.test (test)
+import root.test (rootSuite)
 import root-cpp
+
+test = rootSuite True
