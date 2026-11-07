@@ -46,6 +46,8 @@ instance Sizeable Str
 source Cpp from "core.hpp"
     ( "morloc_id" as idcpp
     , "morloc_not" as not
+    , "morloc_isNull" as isNull
+    , "morloc_require" as require
     , "morloc_zipWith" as zipWith
     , "morloc_sort" as sort
     , "morloc_sortBy" as sortBy
@@ -67,11 +69,39 @@ source Cpp from "core.hpp"
     , "morloc_rangeStep" as rangeStep
     )
 
-instance Eq a where
-  %inline source Cpp from "core.hpp" ("morloc_eq" as (==))
+instance Eq Int
+       , Eq I8
+       , Eq I16
+       , Eq I32
+       , Eq I64
+       , Eq U8
+       , Eq U16
+       , Eq U32
+       , Eq U64
+       , Eq Real
+       , Eq F32
+       , Eq F64
+       , Eq Str
+       , Eq Bool where
+  %inline
+  source Cpp from "core.hpp" ((==), (!=))
 
-instance Ord a where
-  %inline source Cpp from "core.hpp" ("morloc_le" as (<=))
+instance Ord Int
+       , Ord I8
+       , Ord I16
+       , Ord I32
+       , Ord I64
+       , Ord U8
+       , Ord U16
+       , Ord U32
+       , Ord U64
+       , Ord Real
+       , Ord F32
+       , Ord F64
+       , Ord Str
+       , Ord Bool where
+  %inline
+  source Cpp from "core.hpp" ((<), (<=), (>), (>=))
 
 instance Integral Int
        , Integral I8
