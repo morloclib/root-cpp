@@ -1,0 +1,1 @@
+- [Recursive record handle review](recursive-record-handle-review.md) - 2026-11-15; D (handle) over E (shared_ptr ?R); a sizeof argument shows the record must be an indirection

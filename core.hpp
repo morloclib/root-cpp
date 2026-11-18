@@ -332,6 +332,11 @@ auto morloc_size(const A& x){
   return x.size();
 }
 
+template <class A>
+int morloc_length(const A& xs){
+  return static_cast<int>(xs.size());
+}
+
 // Deque overload
 template <class A, class F>
 auto morloc_map(F f, const std::deque<A>& xs) -> std::deque<std::invoke_result_t<F, A>> {
