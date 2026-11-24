@@ -732,8 +732,13 @@ bool morloc_eq(const std::optional<A>& x, const A& y) {
 
 
 template <class A>
-A morloc_require(std::optional<A> x) {
+const A& morloc_require(const std::optional<A>& x) {
     return x.value();
+}
+
+template <class A>
+A morloc_require(std::optional<A>&& x) {
+    return std::move(x).value();
 }
 
 // a value coerced from `a` to `?a` is never Null
@@ -743,12 +748,12 @@ A morloc_require(A x) {
 }
 
 template <class A>
-bool morloc_isNull(std::optional<A> x) {
+bool morloc_isNull(const std::optional<A>& x) {
     return !x.has_value();
 }
 
 template <class A>
-bool morloc_isNull(A) {
+bool morloc_isNull(const A&) {
     return false;
 }
 
